@@ -38,12 +38,13 @@ typedef struct MenuCtrl
     MenuRegister_t     *pMenuInfo;          /*!< 菜单选项内容 */
     menusize_t          menuNum;            /*!< 菜单选项数目 */
     menusize_t          currPos;            /*!< 当前选择 */
-    uint8_t             isRunCallback;      /*!< 是否执行回调功能函数 */
+    menubool            isRunCallback;      /*!< 是否执行回调功能函数 */
 }MenuCtrl_t;
 
 typedef struct
 {
     MenuCtrl_t         *pCurrMenuCtrl;      /*!< 当前菜单控制处理 */
+    menubool           isEnglish;           /*!< 是否切换成英文 */
 }MenuManage_t;
 
 /* Private define ----------------------------------------------------------------------------------------------------*/
@@ -113,6 +114,8 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 #if MENU_MAX_DEPTH != 0
     sg_currMenuDepth = 0;
 #endif
+    
+    sg_tMenuManage.isEnglish = MENU_FALSE;
 
     if ((pMenuCtrl = NewMenu()) != NULL)
     {
@@ -121,7 +124,7 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
         pMenuCtrl->pMenuInfo = pMainMenu;
         pMenuCtrl->menuNum = num;
         pMenuCtrl->currPos = 0;
-        pMenuCtrl->isRunCallback = 0;
+        pMenuCtrl->isRunCallback = MENU_FALSE;
 
         sg_tMenuManage.pCurrMenuCtrl = pMenuCtrl;
 
@@ -129,6 +132,16 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
     }
 
     return -1;
+}
+
+/**
+  * @brief      设置英文显示
+  * 
+  * @param[in]  isEnable 使能英文显示
+  */
+void Menu_SetEnglishLanguage(menubool isEnable)
+{
+    sg_tMenuManage.isEnglish = isEnable;
 }
 
 /**
@@ -144,6 +157,16 @@ int Menu_ResetMainMenu(void)
 }
 
 /**
+  * @brief      确认当前为菜单界面
+  * 
+  * @return     MENU_FALSE,处于非菜单界面; MENU_TRUE,处于菜单界面
+  */
+menubool Menu_IsMenu(void)
+{
+    return !sg_tMenuManage.pCurrMenuCtrl->isRunCallback;
+}
+
+/**
   * @brief      进入当前菜单选项
   * 
   * @return     0,成功; -1,失败  
@@ -154,7 +177,7 @@ int Menu_Enter(void)
 
     if (sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].subMenuNum != 0)
     {
-        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = 0;
+        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_FALSE;
 
         if ((pMenuCtrl = NewMenu()) != NULL)
         {
@@ -173,7 +196,7 @@ int Menu_Enter(void)
             }
             
             pMenuCtrl->currPos = 0;
-            pMenuCtrl->isRunCallback = 0;
+            pMenuCtrl->isRunCallback = MENU_FALSE;
 
             sg_tMenuManage.pCurrMenuCtrl = pMenuCtrl;
             return 0;
@@ -181,7 +204,7 @@ int Menu_Enter(void)
     }
     else
     {
-        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = 1;
+        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_TRUE;
         return 0;
     }
 
@@ -196,9 +219,9 @@ int Menu_Enter(void)
   */
 int Menu_Exit(uint8_t isReset)
 {
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback == 1)
+    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
-        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = 0;
+        sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_FALSE;
     }
     else
     {
@@ -232,7 +255,7 @@ int Menu_Exit(uint8_t isReset)
   */
 int Menu_SelectPrevious(uint8_t isAllowRoll)
 {
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback != 0)
+    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         return -1;
     }
@@ -265,7 +288,7 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
   */
 int Menu_SelectNext(uint8_t isAllowRoll)
 {
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback != 0)
+    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         return -1;
     }
@@ -301,12 +324,23 @@ int Menu_Task(void)
     MenuRegister_t *pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
     char *parrszDesc[MENU_MAX_NUM];
 
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback == 0)
+    if (!sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
-        for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+        if (sg_tMenuManage.isEnglish)
         {
-            parrszDesc[i] = (char *)pMenu[i].pszDesc;
+            for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+            {
+                parrszDesc[i] = (char *)pMenu[i].pszEnDesc;
+            }        
         }
+        else
+        {
+            for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+            {
+                parrszDesc[i] = (char *)pMenu[i].pszDesc;
+            }        
+        }
+
 
         if (sg_tMenuManage.pCurrMenuCtrl->pfnShowMenuFun != NULL)
         {

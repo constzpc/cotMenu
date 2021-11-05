@@ -23,11 +23,12 @@
 #endif
 
 
+
 /******************************************* 配置项 ********************************************************************/
 
 /* 多级菜单深度, 为0则表示采用 malloc/free 的方式实现多级菜单, 可无限延申, 
    否则通过数组的形式实现多级菜单,最多为 MENU_MAX_DEPTH */
-#define MENU_MAX_DEPTH          0
+#define MENU_MAX_DEPTH          5
 
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM            20
@@ -44,6 +45,7 @@ typedef uint16_t menusize_t;
 #endif
 
 
+typedef enum{MENU_FALSE = 0, MENU_TRUE} menubool;
 typedef void (*MenuCallFun_f)(void);
 
 // total: 菜单项总数目; select: 所选项; pszDesc: 菜单项的字符串描述
@@ -55,7 +57,9 @@ typedef void (*ShowMenuCallFun_f)(menusize_t total, menusize_t select, const cha
   */
 typedef struct MenuRegister
 {
-    const char     *pszDesc;            /*!< 当前选项的字符串描述 */
+    const char     *pszDesc;            /*!< 当前选项的中文字符串描述 */
+    
+    const char     *pszEnDesc;          /*!< 当前选项的英文字符串描述 */
 
     menusize_t      subMenuNum;         /*!< 当前选项的子菜单数目, 子菜单数目为0则表示下一级非菜单界面, 会执行非菜单功能函数 */
 
@@ -75,7 +79,11 @@ typedef struct MenuRegister
 
 extern int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu);
 
+extern void Menu_SetEnglishLanguage(menubool isEnable);
+
 extern int Menu_ResetMainMenu(void);
+
+extern menubool Menu_IsMenu(void);
 
 extern int Menu_Enter(void);
 extern int Menu_Exit(uint8_t isReset);
