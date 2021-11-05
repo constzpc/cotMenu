@@ -27,7 +27,7 @@
 
 /* 多级菜单深度, 为0则表示采用 malloc/free 的方式实现多级菜单, 可无限延申, 
    否则通过数组的形式实现多级菜单,最多为 MENU_MAX_DEPTH */
-#define MENU_MAX_DEPTH          2
+#define MENU_MAX_DEPTH          0
 
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM            20
