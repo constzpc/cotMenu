@@ -66,8 +66,12 @@ typedef struct MenuRegister
     struct MenuRegister *pSubMenu;      /*!< 当前选项的子菜单内容 */
 
     ShowMenuCallFun_f pfnShowMenuFun;   /*!< 当前选项的子菜单显示效果函数, 为NULL则延续上级菜单显示效果 */
-
-    MenuCallFun_f     pfnMenuCallFun;   /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效 */
+    
+    MenuCallFun_f     pfnEnterCallFun;  /*!< 当前选项进入所执行的函数, 只首次进入执行一次, 为NULL不执行 */
+    
+    MenuCallFun_f     pfnExitCallFun;   /*!< 当前选项退出所执行的函数, 只退出时执行一次, 为NULL不执行 */
+    
+    MenuCallFun_f     pfnMenuCallFun;   /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效, 为NULL不执行 */
 }MenuRegister_t;
 
 /* Exported constants ------------------------------------------------------------------------------------------------*/

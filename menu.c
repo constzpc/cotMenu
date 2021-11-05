@@ -45,6 +45,8 @@ typedef struct
 {
     MenuCtrl_t         *pCurrMenuCtrl;      /*!< 当前菜单控制处理 */
     menubool           isEnglish;           /*!< 是否切换成英文 */
+    MenuCallFun_f      pfnEnterCallFun;     /*!< 当前选项进入所执行的函数 */
+    MenuCallFun_f      pfnExitCallFun;      /*!< 当前选项退出所执行的函数 */
 }MenuManage_t;
 
 /* Private define ----------------------------------------------------------------------------------------------------*/
@@ -199,12 +201,14 @@ int Menu_Enter(void)
             pMenuCtrl->isRunCallback = MENU_FALSE;
 
             sg_tMenuManage.pCurrMenuCtrl = pMenuCtrl;
+            sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].pfnEnterCallFun;
             return 0;
         }
     }
     else
     {
         sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_TRUE;
+        sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].pfnEnterCallFun;
         return 0;
     }
 
@@ -222,6 +226,7 @@ int Menu_Exit(uint8_t isReset)
     if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_FALSE;
+        sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].pfnExitCallFun;
     }
     else
     {
@@ -230,6 +235,7 @@ int Menu_Exit(uint8_t isReset)
             MenuCtrl_t *pMenuCtrl = sg_tMenuManage.pCurrMenuCtrl;
 
             sg_tMenuManage.pCurrMenuCtrl = sg_tMenuManage.pCurrMenuCtrl->pLastMenuCtrl;
+            sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].pfnExitCallFun;
             
             if (isReset)
             {
@@ -323,7 +329,19 @@ int Menu_Task(void)
     
     MenuRegister_t *pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
     char *parrszDesc[MENU_MAX_NUM];
+    
+    if (sg_tMenuManage.pfnEnterCallFun != NULL)
+    {
+        sg_tMenuManage.pfnEnterCallFun();
+        sg_tMenuManage.pfnEnterCallFun = NULL;
+    }
 
+    if (sg_tMenuManage.pfnExitCallFun != NULL)
+    {
+        sg_tMenuManage.pfnExitCallFun();
+        sg_tMenuManage.pfnExitCallFun = NULL;
+    }
+    
     if (!sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         if (sg_tMenuManage.isEnglish)
@@ -340,7 +358,6 @@ int Menu_Task(void)
                 parrszDesc[i] = (char *)pMenu[i].pszDesc;
             }        
         }
-
 
         if (sg_tMenuManage.pCurrMenuCtrl->pfnShowMenuFun != NULL)
         {
