@@ -57,7 +57,7 @@ static uint8_t    sg_currMenuDepth = 0;
 #endif
 
 /* Private function prototypes ---------------------------------------------------------------------------------------*/
-static MenuCtrl_t *NewMenu();
+static MenuCtrl_t *NewMenu(void);
 static void DeleteMenu(MenuCtrl_t *pMenu);
 
 /* Private function --------------------------------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ static void DeleteMenu(MenuCtrl_t *pMenu);
   * 
   * @return     MenuCtrl_t* 
   */
-static MenuCtrl_t *NewMenu()
+static MenuCtrl_t *NewMenu(void)
 {
     MenuCtrl_t *pMenuCtrl = NULL;
 #if MENU_MAX_DEPTH == 0
@@ -296,12 +296,14 @@ int Menu_SelectNext(uint8_t isAllowRoll)
   */
 int Menu_Task(void)
 {
+    int i;
+    
     MenuRegister_t *pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
     char *parrszDesc[MENU_MAX_NUM];
 
     if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback == 0)
     {
-        for (int i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+        for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
         {
             parrszDesc[i] = (char *)pMenu[i].pszDesc;
         }
