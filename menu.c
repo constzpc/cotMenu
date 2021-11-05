@@ -232,6 +232,11 @@ int Menu_Exit(uint8_t isReset)
   */
 int Menu_SelectPrevious(uint8_t isAllowRoll)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback != 0)
+    {
+        return -1;
+    }
+
     if (sg_tMenuManage.pCurrMenuCtrl->currPos > 0)
     {
         sg_tMenuManage.pCurrMenuCtrl->currPos--;
@@ -260,6 +265,11 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
   */
 int Menu_SelectNext(uint8_t isAllowRoll)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback != 0)
+    {
+        return -1;
+    }
+        
     if (sg_tMenuManage.pCurrMenuCtrl->currPos < (sg_tMenuManage.pCurrMenuCtrl->menuNum - 1))
     {
         sg_tMenuManage.pCurrMenuCtrl->currPos++;
