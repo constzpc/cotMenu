@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include <string.h>
 
-// æ¸…é™¤å±å¹•
+// Çå³ıÆÁÄ»
 #define CLEAR() printf("\033[2J")
-// å®šä½å…‰æ ‡
+// ¶¨Î»¹â±ê
 #define MOVETO(x,y) printf("\033[%d;%dH", (x), (y))
 
-
+void OnMusicEnterFunction(void);
+void OnMusicExitFunction(void);
 void OnMusicFunction(void);
 void OnVideoFunction(void);
 void OnPhotoFunction(void);
@@ -23,115 +24,132 @@ void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[]);
 void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[]);
 
 
-/**************************** ä¸‰çº§èœå• *****************************************/
+/**************************** Èı¼¶²Ëµ¥ *****************************************/
 
-/* æ›´å¤šè®¾ç½® */
+/* ¸ü¶àÉèÖÃ */
 MenuRegister_t sg_MoreSetMenuTable[] = 
 {
-    {"å‡çº§", 0, NULL, NULL, OnUpgradeFunction},
-    {"è¯­è¨€", 0, NULL, NULL, OnLanguageFunction},
-    {"å…³äº", 0, NULL, NULL, OnAboutMenuFunction},
+    {"Éı¼¶", "Upgrade", 0, NULL, NULL, OnUpgradeFunction},
+    {"ÓïÑÔ", "Language", 0, NULL, NULL, OnLanguageFunction},
+    {"¹ØÓÚ", "About", 0, NULL, NULL, OnAboutMenuFunction},
 };
 
-/**************************** äºŒçº§èœå• *****************************************/
+/**************************** ¶ş¼¶²Ëµ¥ *****************************************/
 
-/* æ‘„åƒæœºèœå• */
+/* ÉãÏñ»ú²Ëµ¥ */
 MenuRegister_t sg_CameraMenuTable[] = 
 {
-    {"æ‹ç…§", 0, NULL, NULL, OnPhotoFunction},
-    {"æ‘„å½±", 0, NULL, NULL, OnCameraFunction},
+    {"ÅÄÕÕ", "Photo", 0, NULL, NULL, OnPhotoFunction},
+    {"ÉãÓ°", "Camera", 0, NULL, NULL, OnCameraFunction},
 };
 
-/* è®¾ç½®èœå• */
+/* ÉèÖÃ²Ëµ¥ */
 MenuRegister_t sg_SetMenuTable[] = 
 {
-    {"è“ç‰™",        0,                                  NULL,                   NULL,       OnBluetoothFunction},
-    {"ç”µæ± ",        0,                                  NULL,                   NULL,       OnBatteryFunction},
-    {"å‚¨å­˜",        0,                                  NULL,                   NULL,       OnStorageFunction},
-    {"æ›´å¤š",        GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL},
+    {"À¶ÑÀ", "Bluetooth",        0,                                  NULL,                   NULL,       OnBluetoothFunction},
+    {"µç³Ø", "Battery",         0,                                  NULL,                   NULL,       OnBatteryFunction},
+    {"´¢´æ", "Store",         0,                                  NULL,                   NULL,       OnStorageFunction},
+    {"¸ü¶à", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL},
 };
 
-/**************************** ä¸€çº§èœå• *****************************************/
-/* ä¸»èœå• */
+/**************************** Ò»¼¶²Ëµ¥ *****************************************/
+/* Ö÷²Ëµ¥ */
 MenuRegister_t sg_MainMenuTable[] = 
 {
-    {"éŸ³ä¹",        0,      NULL,    NULL,       OnMusicFunction},
-    {"è§†é¢‘",        0,      NULL,    NULL,       OnVideoFunction},
-    {"æ‘„åƒæœº",      GET_MENU_NUM(sg_CameraMenuTable),   sg_CameraMenuTable,   NULL,       NULL},
-    {"è®¾ç½®",        GET_MENU_NUM(sg_SetMenuTable),      sg_SetMenuTable,    ShowSetMenu,   NULL},
+    {"  ÒôÀÖ  ", "  Music ",  0,                                  NULL,                   
+        NULL,           OnMusicEnterFunction,   OnMusicExitFunction,    OnMusicFunction},
+    
+    {"  ÊÓÆµ  ", "  Video ",  0,                                  NULL,                   
+        NULL,           NULL,                   NULL,                   OnVideoFunction},
+    
+    {" ÉãÏñ»ú ", " Camera ",  GET_MENU_NUM(sg_CameraMenuTable),   sg_CameraMenuTable,     
+        ShowSetMenu,    NULL,                   NULL,                   NULL},
+    
+    {"  ÉèÖÃ  ", " Setting",  GET_MENU_NUM(sg_SetMenuTable),              sg_SetMenuTable,        
+        ShowSetMenu,    NULL,                   NULL,                   NULL},
 };
+
+void OnMusicEnterFunction(void)
+{
+    printf("--------------------------\n");
+}
+
+void OnMusicExitFunction(void)
+{
+
+}
 
 void OnMusicFunction(void)
 {
-    printf("--------------------------\n");
-    printf("    éŸ³ä¹åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    //printf("--------------------------\n");
+    printf("    ÒôÀÖ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnVideoFunction(void)
 {
     printf("--------------------------\n");
-    printf("     è§†é¢‘åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     ÊÓÆµ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnPhotoFunction(void)
 {
     printf("--------------------------\n");
-    printf("     æ‹ç…§åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     ÅÄÕÕ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnCameraFunction(void)
 {
     printf("--------------------------\n");
-    printf("     æ‘„åƒåŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     ÉãÏñ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnUpgradeFunction(void)
 {
     printf("--------------------------\n");
-    printf("     å‡çº§åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     Éı¼¶¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnLanguageFunction(void)
 {
     printf("--------------------------\n");
-    printf("     è¯­è¨€åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     ÓïÑÔ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnAboutMenuFunction(void)
 {
     printf("--------------------------\n");
-    printf("     å…³äºèœå•æ¡†æ¶ç•Œé¢\n");
+    printf("     ¹ØÓÚ²Ëµ¥¿ò¼Ü½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnBluetoothFunction(void)
 {
     printf("--------------------------\n");
-    printf("     è“ç‰™åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     À¶ÑÀ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnBatteryFunction(void)
 {
     printf("--------------------------\n");
-    printf("     ç”µæ± åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     µç³Ø¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
 void OnStorageFunction(void)
 {
     printf("--------------------------\n");
-    printf("     å‚¨å­˜åŠŸèƒ½æµ‹è¯•ç•Œé¢\n");
+    printf("     ´¢´æ¹¦ÄÜ²âÊÔ½çÃæ\n");
     printf("--------------------------\n");
 }
 
-/* ä¸»èœå•æ˜¾ç¤ºæ•ˆæœ */
+/* Ö÷²Ëµ¥ÏÔÊ¾Ğ§¹û */
 void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[])
 {
     for (int i = 0; i < total; i++)
@@ -149,7 +167,7 @@ void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[])
     printf("\n");
 }
 
-/* è®¾ç½®èœå•æ˜¾ç¤ºæ•ˆæœ */
+/* ÉèÖÃ²Ëµ¥ÏÔÊ¾Ğ§¹û */
 void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[])
 {
     for (int i = 0; i < total; i++)
@@ -179,8 +197,8 @@ int main(int argc, char **argv)
         MOVETO(0, 0);
         Menu_Task();
 
-        printf("é€‰æ‹©æ“ä½œ(0-è¿”å›; 1-è¿›å…¥; 2-ä¸‹ä¸€ä¸ª; 3-ä¸Šä¸€ä¸ª; 4-ä¸»èœå•): ");
-        scanf(" %d", &cmd); // ç©ºæ ¼ä½œç”¨æ˜¯å¿½ç•¥ä¸Šæ¬¡çš„å›è½¦
+        printf("Ñ¡Ôñ²Ù×÷(0-·µ»Ø; 1-½øÈë; 2-ÏÂÒ»¸ö; 3-ÉÏÒ»¸ö; 4-Ö÷²Ëµ¥): ");
+        scanf(" %d", &cmd); // ¿Õ¸ñ×÷ÓÃÊÇºöÂÔÉÏ´ÎµÄ»Ø³µ
 
         switch (cmd)
         {
