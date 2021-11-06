@@ -199,11 +199,46 @@ int Menu_ResetMainMenu(void)
 }
 
 /**
-  * @brief      确认当前为菜单界面
+  * @brief      菜单功能是否正在运行
   * 
-  * @return     MENU_FALSE,处于非菜单界面; MENU_TRUE,处于菜单界面
+  * @return     MENU_FALSE,已停止运行; MENU_TRUE,正在运行
   */
-menubool Menu_IsMenu(void)
+menubool Menu_IsRun(void)
+{
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return MENU_FALSE;
+    }
+
+    return MENU_TRUE;
+}
+
+/**
+  * @brief      当前是否处于主菜单界面
+  * 
+  * @return     MENU_FALSE,否/已停止运行; MENU_TRUE,是
+  */
+menubool Menu_IsMainMenu(void)
+{
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return MENU_FALSE;
+    }
+    
+    if (sg_tMenuManage.pCurrMenuCtrl->pLastMenuCtrl != NULL)
+    {
+        return MENU_FALSE;
+    }
+
+    return MENU_TRUE;
+}
+
+/**
+  * @brief      当前是否处于菜单界面, 即没有在执行非菜单功能回调函数
+  * 
+  * @return     MENU_FALSE,正在执行非菜单功能回调函数/已停止运行; MENU_TRUE,处于菜单界面
+  */
+menubool Menu_IsAtMenu(void)
 {
     if (sg_tMenuManage.pCurrMenuCtrl == NULL)
     {

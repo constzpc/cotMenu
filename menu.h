@@ -90,7 +90,9 @@ extern int Menu_SetEnglish(menubool isEnable);
 
 extern int Menu_ResetMainMenu(void);
 
-extern menubool Menu_IsMenu(void);
+extern menubool Menu_IsRun(void);
+extern menubool Menu_IsMainMenu(void);
+extern menubool Menu_IsAtMenu(void);
 
 extern int Menu_Enter(void);
 extern int Menu_Exit(uint8_t isReset);

@@ -253,44 +253,86 @@ int main(int argc, char **argv)
 {
     int ret, cmd = 0;
 
-    Menu_Init(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
-
     while (1)
     {
         CLEAR();
         MOVETO(0, 0);
         Menu_Task();
 
-        printf("选择操作(0-返回; 1-进入; 2-下一个; 3-上一个; 4-主菜单): ");
-        scanf(" %d", &cmd); // 空格作用是忽略上次的回车
-
-        switch (cmd)
+        if (!Menu_IsRun())
         {
-        case 0:
-            if (Menu_Exit(1) < 0)
+            printf("选择操作(0-进入主菜单; 1-退出): ");
+            scanf(" %d", &cmd); // 空格作用是忽略上次的回车
+
+            if (cmd == 0)
             {
-                Menu_DeInit();
+                Menu_Init(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu); 
+            }
+            else if (cmd == 1)
+            {
                 return 0;
             }
-            break;
+        }
+        else
+        {
+            if (Menu_IsAtMenu())
+            {
+                if (Menu_IsMainMenu())
+                {
+                    printf("选择操作(0-退出主菜单; 2-进入; 3-下一个; 4-上一个): ");
+                }
+                else
+                {
+                    printf("选择操作(0-返回; 1-返回主菜单; 2-进入; 3-下一个; 4-上一个): ");
+                }
+                
+                scanf(" %d", &cmd); // 空格作用是忽略上次的回车
 
-        case 1:
-            Menu_Enter();
-            break;
+                switch (cmd)
+                {
+                case 0:
+                    if (Menu_IsMainMenu())
+                    {
+                        Menu_DeInit();
+                    }
+                    else
+                    {
+                        Menu_Exit(1);
+                    }
+                    break;
+                case 1:
+                    if (!Menu_IsMainMenu())
+                    {
+                        Menu_ResetMainMenu();
+                    }
+                    break;
+                case 2:
+                    Menu_Enter();
+                    break;
+                case 3:
+                    Menu_SelectNext(1);
+                    break;
+                case 4:
+                    Menu_SelectPrevious(1);
+                    break;
+                default:
+                    break;    
+                }
+            }
+            else
+            {
+                printf("选择操作(0-返回; 1-返回主菜单): ");
+                scanf(" %d", &cmd); // 空格作用是忽略上次的回车
 
-        case 2:
-            Menu_SelectNext(1);
-            break;
-
-        case 3:
-            Menu_SelectPrevious(1);
-            break;
-
-        case 4:
-            Menu_ResetMainMenu();
-            break;
-        default:
-            break;    
+                if (cmd == 0)
+                {
+                    Menu_Exit(0); 
+                }
+                else if (cmd == 1)
+                {
+                    Menu_ResetMainMenu();;
+                }
+            }
         }
     }
 
