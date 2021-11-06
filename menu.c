@@ -113,6 +113,10 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 {
     MenuCtrl_t *pMenuCtrl = NULL;
 
+    if (sg_tMenuManage.pCurrMenuCtrl != NULL)
+    {
+        return -1;
+    }
 #if MENU_MAX_DEPTH != 0
     sg_currMenuDepth = 0;
 #endif
@@ -149,7 +153,7 @@ int Menu_DeInit(void)
     {
         return -1;
     }
-    
+
     while (Menu_Exit(1) == 0);
 
     DeleteMenu(sg_tMenuManage.pCurrMenuCtrl);
