@@ -257,7 +257,7 @@ int Menu_Enter(void)
 {
     MenuCtrl_t *pMenuCtrl = NULL;
 
-    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL || sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         return -1;
     }
