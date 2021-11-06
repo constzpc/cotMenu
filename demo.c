@@ -20,8 +20,8 @@ void OnAboutMenuFunction(void);
 void OnBluetoothFunction(void);
 void OnBatteryFunction(void);
 void OnStorageFunction(void);
-void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[]);
-void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[]);
+void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[]);
+void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[]);
 
 
 /**************************** 三级菜单 *****************************************/
@@ -29,9 +29,9 @@ void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[]);
 /* 更多设置 */
 MenuRegister_t sg_MoreSetMenuTable[] = 
 {
-    {"升级", "Upgrade", 0, NULL, NULL, OnUpgradeFunction},
-    {"语言", "Language", 0, NULL, NULL, OnLanguageFunction},
-    {"关于", "About", 0, NULL, NULL, OnAboutMenuFunction},
+    {"升级", "Upgrade", 0, NULL, NULL, NULL, NULL, OnUpgradeFunction, NULL},
+    {"语言", "Language", 0, NULL, NULL, NULL, NULL, OnLanguageFunction, NULL},
+    {"关于", "About", 0, NULL, NULL, NULL, NULL, OnAboutMenuFunction, NULL},
 };
 
 /**************************** 二级菜单 *****************************************/
@@ -39,34 +39,63 @@ MenuRegister_t sg_MoreSetMenuTable[] =
 /* 摄像机菜单 */
 MenuRegister_t sg_CameraMenuTable[] = 
 {
-    {"拍照", "Photo", 0, NULL, NULL, OnPhotoFunction},
-    {"摄影", "Camera", 0, NULL, NULL, OnCameraFunction},
+    {"拍照", "Photo", 0, NULL, NULL, NULL, NULL, OnPhotoFunction, NULL},
+    {"摄影", "Camera", 0, NULL, NULL, NULL, NULL, OnCameraFunction, NULL},
 };
 
 /* 设置菜单 */
 MenuRegister_t sg_SetMenuTable[] = 
 {
-    {"蓝牙", "Bluetooth",        0,                                  NULL,                   NULL,       OnBluetoothFunction},
-    {"电池", "Battery",         0,                                  NULL,                   NULL,       OnBatteryFunction},
-    {"储存", "Store",         0,                                  NULL,                   NULL,       OnStorageFunction},
-    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL},
+    {"蓝牙", "Bluetooth",        0,                                  NULL,                   NULL,       NULL, NULL, OnBluetoothFunction, NULL},
+    {"电池", "Battery",         0,                                  NULL,                   NULL,       NULL, NULL, OnBatteryFunction, NULL},
+    {"储存", "Store",         0,                                  NULL,                   NULL,       NULL, NULL, OnStorageFunction, NULL},
+    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL, NULL, NULL, NULL},
 };
 
 /**************************** 一级菜单 *****************************************/
+
+
+/* 自定义图标数据 */
+typedef struct demo
+{
+    const char *pImageFrame;
+    const char *pImage;
+} MenuImage_t;
+
+const MenuImage_t sgc_MusicImage = {
+"mmmmmmmmmm",
+"@"
+};
+
+const MenuImage_t sgc_VideoImage = {
+"vvvvvvvvvv",
+"#"
+};
+
+const MenuImage_t sgc_CameraImage = {
+"**********",
+"&"
+};
+
+const MenuImage_t sgc_SettingImage = {
+"$$$$$$$$$$",
+"%"
+};
+
 /* 主菜单 */
 MenuRegister_t sg_MainMenuTable[] = 
 {
     {"  音乐  ", "  Music ",  0,                                  NULL,                   
-        NULL,           OnMusicEnterFunction,   OnMusicExitFunction,    OnMusicFunction},
+        NULL,           OnMusicEnterFunction,   OnMusicExitFunction,    OnMusicFunction, (MenuImage_t *)&sgc_MusicImage},
     
     {"  视频  ", "  Video ",  0,                                  NULL,                   
-        NULL,           NULL,                   NULL,                   OnVideoFunction},
+        NULL,           NULL,                   NULL,                   OnVideoFunction, (MenuImage_t *)&sgc_VideoImage},
     
     {" 摄像机 ", " Camera ",  GET_MENU_NUM(sg_CameraMenuTable),   sg_CameraMenuTable,     
-        ShowSetMenu,    NULL,                   NULL,                   NULL},
+        ShowSetMenu,    NULL,                   NULL,                   NULL, (MenuImage_t *)&sgc_CameraImage},
     
     {"  设置  ", " Setting",  GET_MENU_NUM(sg_SetMenuTable),              sg_SetMenuTable,        
-        ShowSetMenu,    NULL,                   NULL,                   NULL},
+        ShowSetMenu,    NULL,                   NULL,                   NULL, (MenuImage_t *)&sgc_SettingImage},
 };
 
 void OnMusicEnterFunction(void)
@@ -150,17 +179,53 @@ void OnStorageFunction(void)
 }
 
 /* 主菜单显示效果 */
-void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[])
+void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[])
 {
+    MenuImage_t *pMenuImage;
+
     for (int i = 0; i < total; i++)
     {
+        pMenuImage = (MenuImage_t *)pExtendData[i];
+
         if (i == select)
         {
-            printf("\e[0;30;47m %-10s \e[0m", pszDesc[i]);
+            printf("\e[0;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
         }
         else
         {
-            printf("\e[7;30;47m %-10s \e[0m", pszDesc[i]);
+            printf("\e[7;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
+        }
+    }
+
+    printf("\n");
+
+    for (int i = 0; i < total; i++)
+    {
+        pMenuImage = (MenuImage_t *)pExtendData[i];
+
+        if (i == select)
+        {
+            printf("\e[0;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, pszDesc[i], pMenuImage->pImage);
+        }
+        else
+        {
+            printf("\e[7;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, pszDesc[i], pMenuImage->pImage);
+        }
+    }
+
+    printf("\n");
+
+    for (int i = 0; i < total; i++)
+    {
+        pMenuImage = (MenuImage_t *)pExtendData[i];
+
+        if (i == select)
+        {
+            printf("\e[0;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
+        }
+        else
+        {
+            printf("\e[7;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
         }
     }
 
@@ -168,7 +233,7 @@ void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[])
 }
 
 /* 设置菜单显示效果 */
-void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[])
+void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[])
 {
     for (int i = 0; i < total; i++)
     {

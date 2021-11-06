@@ -329,6 +329,7 @@ int Menu_Task(void)
     
     MenuRegister_t *pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
     char *parrszDesc[MENU_MAX_NUM];
+    void *pExtendData[MENU_MAX_NUM];
     
     if (sg_tMenuManage.pfnEnterCallFun != NULL)
     {
@@ -349,6 +350,7 @@ int Menu_Task(void)
             for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
             {
                 parrszDesc[i] = (char *)pMenu[i].pszEnDesc;
+                pExtendData[i] = pMenu[i].pExtendData;
             }        
         }
         else
@@ -356,13 +358,14 @@ int Menu_Task(void)
             for (i = 0; i < sg_tMenuManage.pCurrMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
             {
                 parrszDesc[i] = (char *)pMenu[i].pszDesc;
+                pExtendData[i] = pMenu[i].pExtendData;
             }        
         }
 
         if (sg_tMenuManage.pCurrMenuCtrl->pfnShowMenuFun != NULL)
         {
             sg_tMenuManage.pCurrMenuCtrl->pfnShowMenuFun(sg_tMenuManage.pCurrMenuCtrl->menuNum, 
-                        sg_tMenuManage.pCurrMenuCtrl->currPos, (const char **)parrszDesc);
+                        sg_tMenuManage.pCurrMenuCtrl->currPos, (const char **)parrszDesc, pExtendData);
         }
     }
     else
