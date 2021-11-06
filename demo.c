@@ -249,7 +249,6 @@ void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[], voi
 }
 
 
-
 int main(int argc, char **argv)
 {
     int ret, cmd = 0;
@@ -270,6 +269,7 @@ int main(int argc, char **argv)
         case 0:
             if (Menu_Exit(1) < 0)
             {
+                Menu_DeInit();
                 return 0;
             }
             break;

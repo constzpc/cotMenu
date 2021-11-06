@@ -104,9 +104,9 @@ static void DeleteMenu(MenuCtrl_t *pMenu)
 /**
   * @brief      菜单初始化
   * 
-  * @param[in]  pMainMenu  主菜单注册信息
-  * @param[in]  num        主菜单数目
-  * @param[in]  fpnShowMenu  主菜单显示效果函数
+  * @param[in]  pMainMenu        主菜单注册信息
+  * @param[in]  num              主菜单数目
+  * @param[in]  fpnShowMenu      主菜单显示效果函数, 不能为 NULL
   * @return     0,成功; -1,失败 
   */
 int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu)
@@ -118,6 +118,8 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 #endif
     
     sg_tMenuManage.isEnglish = MENU_FALSE;
+    sg_tMenuManage.pfnEnterCallFun = NULL;
+    sg_tMenuManage.pfnExitCallFun = NULL;
 
     if ((pMenuCtrl = NewMenu()) != NULL)
     {
@@ -137,13 +139,42 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 }
 
 /**
+ * @brief  菜单反初始化
+ * 
+ * @return 0,成功; -1,失败  
+ */
+int Menu_DeInit(void)
+{
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
+    
+    while (Menu_Exit(1) == 0);
+
+    DeleteMenu(sg_tMenuManage.pCurrMenuCtrl);
+    sg_tMenuManage.pCurrMenuCtrl = NULL;
+    sg_tMenuManage.isEnglish = MENU_FALSE;
+    sg_tMenuManage.pfnEnterCallFun = NULL;
+    sg_tMenuManage.pfnExitCallFun = NULL;
+
+    return 0;
+}
+
+/**
   * @brief      设置英文显示
   * 
   * @param[in]  isEnable 使能英文显示
   */
-void Menu_SetEnglishLanguage(menubool isEnable)
+int Menu_SetEnglish(menubool isEnable)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
     sg_tMenuManage.isEnglish = isEnable;
+    return 0;
 }
 
 /**
@@ -153,6 +184,11 @@ void Menu_SetEnglishLanguage(menubool isEnable)
   */
 int Menu_ResetMainMenu(void)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
     while (Menu_Exit(1) == 0);
     
     return 0;
@@ -165,6 +201,11 @@ int Menu_ResetMainMenu(void)
   */
 menubool Menu_IsMenu(void)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return MENU_FALSE;
+    }
+
     return !sg_tMenuManage.pCurrMenuCtrl->isRunCallback;
 }
 
@@ -176,6 +217,11 @@ menubool Menu_IsMenu(void)
 int Menu_Enter(void)
 {
     MenuCtrl_t *pMenuCtrl = NULL;
+
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
 
     if (sg_tMenuManage.pCurrMenuCtrl->pMenuInfo[sg_tMenuManage.pCurrMenuCtrl->currPos].subMenuNum != 0)
     {
@@ -219,10 +265,15 @@ int Menu_Enter(void)
   * @brief      退出当前选项并返回上一层菜单
   * 
   * @param[in]  isReset 菜单选项是否从头选择
-  * @return     0,成功; -1,失败, 即主菜单 
+  * @return     0,成功; -1,失败, 即目前处于主菜单, 无法返回
   */
 int Menu_Exit(uint8_t isReset)
 {
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
     if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         sg_tMenuManage.pCurrMenuCtrl->isRunCallback = MENU_FALSE;
@@ -261,7 +312,7 @@ int Menu_Exit(uint8_t isReset)
   */
 int Menu_SelectPrevious(uint8_t isAllowRoll)
 {
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL || sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         return -1;
     }
@@ -294,7 +345,7 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
   */
 int Menu_SelectNext(uint8_t isAllowRoll)
 {
-    if (sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL || sg_tMenuManage.pCurrMenuCtrl->isRunCallback)
     {
         return -1;
     }
@@ -322,14 +373,22 @@ int Menu_SelectNext(uint8_t isAllowRoll)
 /**
   * @brief  菜单任务
   * 
+  * @return 0,成功, 处于菜单模式下; -1,失败, 未处于菜单模式下 
   */
 int Menu_Task(void)
 {
     int i;
     
-    MenuRegister_t *pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
+    MenuRegister_t *pMenu;
     char *parrszDesc[MENU_MAX_NUM];
     void *pExtendData[MENU_MAX_NUM];
+
+    if (sg_tMenuManage.pCurrMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
+    pMenu = sg_tMenuManage.pCurrMenuCtrl->pMenuInfo;
     
     if (sg_tMenuManage.pfnEnterCallFun != NULL)
     {
