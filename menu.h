@@ -58,7 +58,7 @@ typedef void (*ShowMenuCallFun_f)(menusize_t total, menusize_t select, const cha
 typedef struct MenuRegister
 {
     const char     *pszDesc;            /*!< 当前选项的中文字符串描述 */
-    
+
     const char     *pszEnDesc;          /*!< 当前选项的英文字符串描述 */
 
     menusize_t      subMenuNum;         /*!< 当前选项的子菜单数目, 子菜单数目为0则表示下一级非菜单界面, 会执行非菜单功能函数 */
@@ -66,11 +66,11 @@ typedef struct MenuRegister
     struct MenuRegister *pSubMenu;      /*!< 当前选项的子菜单内容 */
 
     ShowMenuCallFun_f pfnShowMenuFun;   /*!< 当前选项的子菜单显示效果函数, 为NULL则延续上级菜单显示效果 */
-    
+
     MenuCallFun_f     pfnEnterCallFun;  /*!< 当前选项确定进入时需要执行的函数, 为NULL不执行 */
-    
+
     MenuCallFun_f     pfnExitCallFun;   /*!< 当前选项进入后在退出时需要执行的函数, 为NULL不执行 */
-    
+
     MenuCallFun_f     pfnMenuCallFun;   /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效, 为NULL不执行 */
 
     void             *pExtendData;      /*!< 当前选项的菜单显示效果函数扩展数据入参, 可自行设置该内容 */
