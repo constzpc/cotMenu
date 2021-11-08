@@ -48,8 +48,26 @@ typedef uint16_t menusize_t;
 typedef enum{MENU_FALSE = 0, MENU_TRUE} menubool;
 typedef void (*MenuCallFun_f)(void);
 
-// total: 菜单项总数目; select: 所选项; pszDesc: 菜单项的字符串描述; pExtendData: 扩展数据
-typedef void (*ShowMenuCallFun_f)(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[]); 
+typedef struct
+{
+    menusize_t totalNum;            /*!< 当前菜单中选项的总数目 */
+
+    menusize_t select;              /*!< 当前菜单中被选中的选项 */
+
+    /* 显示限制相关参数(特别是因为显示平台限制而每次只能显示部分选项的情况) */
+    struct 
+    {
+        menusize_t base;            /*!< 当前菜单中首个显示的选项 */
+
+        menusize_t num;             /*!< 当前菜单中需要显示的选项数目 */
+    } show;
+    
+    char *pszDesc[MENU_MAX_NUM];    /*!< 当前菜单中所有选项的字符串描述 */
+
+    void *pExtendData[MENU_MAX_NUM];/*!< 当前菜单中所有选项的扩展数据 */
+} MenuShow_t;
+
+typedef void (*ShowMenuCallFun_f)(const MenuShow_t *ptShowInfo); 
 
 /**
   * @brief 菜单信息注册结构体
@@ -87,6 +105,7 @@ extern int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f f
 extern int Menu_DeInit(void);
 
 extern int Menu_SetEnglish(menubool isEnable);
+extern int Menu_SetMenuShowLimit(menubool showNum);
 
 extern int Menu_ResetMainMenu(void);
 

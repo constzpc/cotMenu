@@ -20,8 +20,9 @@ void OnAboutMenuFunction(void);
 void OnBluetoothFunction(void);
 void OnBatteryFunction(void);
 void OnStorageFunction(void);
-void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[]);
-void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[]);
+void OnMoreSetMenuEnterFunction(void);
+void ShowMainMenu(const MenuShow_t *ptShowInfo);
+void ShowSetMenu(const MenuShow_t *ptShowInfo);
 
 
 /**************************** 三级菜单 *****************************************/
@@ -49,7 +50,7 @@ MenuRegister_t sg_SetMenuTable[] =
     {"蓝牙", "Bluetooth",        0,                                  NULL,                   NULL,       NULL, NULL, OnBluetoothFunction, NULL},
     {"电池", "Battery",         0,                                  NULL,                   NULL,       NULL, NULL, OnBatteryFunction, NULL},
     {"储存", "Store",         0,                                  NULL,                   NULL,       NULL, NULL, OnStorageFunction, NULL},
-    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL, NULL, NULL, NULL},
+    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   OnMoreSetMenuEnterFunction, NULL, NULL, NULL},
 };
 
 /**************************** 一级菜单 *****************************************/
@@ -178,16 +179,23 @@ void OnStorageFunction(void)
     printf("--------------------------\n");
 }
 
+void OnMoreSetMenuEnterFunction(void)
+{
+    Menu_SetMenuShowLimit(2);
+}
+
 /* 主菜单显示效果 */
-void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[])
+void ShowMainMenu(const MenuShow_t *ptShowInfo)
 {
     MenuImage_t *pMenuImage;
+    menusize_t  tmpselect;
 
-    for (int i = 0; i < total; i++)
+    for (int i = 0; i < ptShowInfo->show.num; i++)
     {
-        pMenuImage = (MenuImage_t *)pExtendData[i];
+        tmpselect = i + ptShowInfo->show.base;
+        pMenuImage = (MenuImage_t *)ptShowInfo->pExtendData[tmpselect];
 
-        if (i == select)
+        if (tmpselect == ptShowInfo->select)
         {
             printf("\e[0;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
         }
@@ -199,27 +207,29 @@ void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], vo
 
     printf("\n");
 
-    for (int i = 0; i < total; i++)
+    for (int i = 0; i < ptShowInfo->show.num; i++)
     {
-        pMenuImage = (MenuImage_t *)pExtendData[i];
+        tmpselect = i + ptShowInfo->show.base;
+        pMenuImage = (MenuImage_t *)ptShowInfo->pExtendData[tmpselect];
 
-        if (i == select)
+        if (tmpselect == ptShowInfo->select)
         {
-            printf("\e[0;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, pszDesc[i], pMenuImage->pImage);
+            printf("\e[0;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, ptShowInfo->pszDesc[tmpselect], pMenuImage->pImage);
         }
         else
         {
-            printf("\e[7;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, pszDesc[i], pMenuImage->pImage);
+            printf("\e[7;30;47m %-s%-8s%-s \e[0m", pMenuImage->pImage, ptShowInfo->pszDesc[tmpselect], pMenuImage->pImage);
         }
     }
 
     printf("\n");
 
-    for (int i = 0; i < total; i++)
+    for (int i = 0; i < ptShowInfo->show.num; i++)
     {
-        pMenuImage = (MenuImage_t *)pExtendData[i];
+        tmpselect = i + ptShowInfo->show.base;
+        pMenuImage = (MenuImage_t *)ptShowInfo->pExtendData[tmpselect];
 
-        if (i == select)
+        if (tmpselect == ptShowInfo->select)
         {
             printf("\e[0;30;47m %-10s \e[0m", pMenuImage->pImageFrame);
         }
@@ -233,17 +243,21 @@ void ShowMainMenu(menusize_t total, menusize_t select, const char *pszDesc[], vo
 }
 
 /* 设置菜单显示效果 */
-void ShowSetMenu(menusize_t total, menusize_t select, const char *pszDesc[], void *pExtendData[])
+void ShowSetMenu(const MenuShow_t *ptShowInfo)
 {
-    for (int i = 0; i < total; i++)
+    menusize_t  tmpselect;
+
+    for (int i = 0; i < ptShowInfo->show.num; i++)
     {
-        if (i == select)
+        tmpselect = i + ptShowInfo->show.base;
+        
+        if (tmpselect == ptShowInfo->select)
         {
-            printf("> %-10s\n", pszDesc[i]);
+            printf("> %-10s\n", ptShowInfo->pszDesc[tmpselect]);
         }
         else
         {
-            printf("  %-10s\n", pszDesc[i]);
+            printf("  %-10s\n", ptShowInfo->pszDesc[tmpselect]);
         }
     }
 }
@@ -267,6 +281,7 @@ int main(int argc, char **argv)
             if (cmd == 0)
             {
                 Menu_Init(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu); 
+                Menu_SetMenuShowLimit(3);
             }
             else if (cmd == 1)
             {

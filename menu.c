@@ -36,14 +36,15 @@ typedef struct MenuCtrl
     struct MenuCtrl    *pParentMenuCtrl;    /*!< 父菜单控制处理 */
     ShowMenuCallFun_f   pfnShowMenuFun;     /*!< 菜单显示效果函数 */
     MenuRegister_t     *pMenuInfo;          /*!< 菜单选项内容 */
-    menusize_t          menuNum;            /*!< 菜单选项数目 */
-    menusize_t          select;             /*!< 当前选择 */
+    menusize_t          totalNum;           /*!< 当前菜单选项总数目 */
+    menusize_t          showNum;            /*!< 当前菜单选项需要显示的数目 */
+    menusize_t          select;             /*!< 当前菜单选中的选项 */
     menubool            isRunCallback;      /*!< 是否执行回调功能函数 */
 }MenuCtrl_t;
 
 typedef struct
 {
-    MenuCtrl_t         *pMenuCtrl;          /*!< 当前菜单控制处理 */
+    MenuCtrl_t        *pMenuCtrl;           /*!< 当前菜单控制处理 */
     menubool           isEnglish;           /*!< 是否切换成英文 */
     MenuCallFun_f      pfnEnterCallFun;     /*!< 当前选项进入所执行的函数 */
     MenuCallFun_f      pfnExitCallFun;      /*!< 当前选项退出所执行的函数 */
@@ -130,7 +131,8 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
         pMenuCtrl->pParentMenuCtrl = NULL;
         pMenuCtrl->pfnShowMenuFun = fpnShowMenu;
         pMenuCtrl->pMenuInfo = pMainMenu;
-        pMenuCtrl->menuNum = num;
+        pMenuCtrl->totalNum = num;
+        pMenuCtrl->showNum = num;
         pMenuCtrl->select = 0;
         pMenuCtrl->isRunCallback = MENU_FALSE;
 
@@ -169,6 +171,7 @@ int Menu_DeInit(void)
   * @brief      设置英文显示
   * 
   * @param[in]  isEnable 使能英文显示
+  * @return     0,成功; -1,失败  
   */
 int Menu_SetEnglish(menubool isEnable)
 {
@@ -178,6 +181,28 @@ int Menu_SetEnglish(menubool isEnable)
     }
 
     sg_tMenuManage.isEnglish = isEnable;
+    return 0;
+}
+
+/**
+  * @brief      设置菜单显示限制
+  * 
+  * @note       设置成功后, 子菜单会延续父菜单的显示限制, 若需要单独设置子菜单显示限制，可通过菜单选项中的进入时执行函数设置
+  * @param[in]  showNum 限制需要显示的数目
+  * @return     0,成功; -1,失败
+  */
+int Menu_SetMenuShowLimit(menubool showNum)
+{
+    if (sg_tMenuManage.pMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
+    if (showNum < sg_tMenuManage.pMenuCtrl->totalNum)
+    {
+        sg_tMenuManage.pMenuCtrl->showNum = showNum;
+    }
+    
     return 0;
 }
 
@@ -270,7 +295,8 @@ int Menu_Enter(void)
         {
             pMenuCtrl->pParentMenuCtrl = sg_tMenuManage.pMenuCtrl;
             pMenuCtrl->pMenuInfo = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pSubMenu;
-            pMenuCtrl->menuNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].subMenuNum;
+            pMenuCtrl->totalNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].subMenuNum;
+            pMenuCtrl->showNum = sg_tMenuManage.pMenuCtrl->showNum;
 
             /* 若子菜单没有设置显示风格，则延续上个菜单界面的 */
             if (sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnShowMenuFun != NULL)
@@ -364,7 +390,7 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
     {
         if (isAllowRoll)
         {
-            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->menuNum - 1;
+            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->totalNum - 1;
         }
         else
         {
@@ -388,8 +414,8 @@ int Menu_SelectNext(uint8_t isAllowRoll)
     {
         return -1;
     }
-        
-    if (sg_tMenuManage.pMenuCtrl->select < (sg_tMenuManage.pMenuCtrl->menuNum - 1))
+
+    if (sg_tMenuManage.pMenuCtrl->select < (sg_tMenuManage.pMenuCtrl->totalNum - 1))
     {
         sg_tMenuManage.pMenuCtrl->select++;
     }
@@ -401,12 +427,40 @@ int Menu_SelectNext(uint8_t isAllowRoll)
         }
         else
         {
-            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->menuNum - 1;
+            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->totalNum - 1;
             return -1;
         }
     }
 
     return 0;
+}
+
+/**
+  * @brief      获取当前菜单中首个显示的选项
+  * 
+  * @param[in]  showNum     当前菜单中需要显示的选项数目
+  * @param[in]  currBase    目前首个显示的选项
+  * @param[in]  select      当前菜单中被选中的选项
+  * @return     新首个显示的选项 
+  */
+static menusize_t GetShowBase(menusize_t showNum, menusize_t currBase, menusize_t select)
+{
+    menusize_t base = currBase;
+
+    if (select < currBase)
+    {
+        base = select;
+    }
+    else if ((select - currBase) >= showNum)
+    {
+        base = select - showNum + 1;
+    }
+    else
+    {
+        base = currBase;
+    }
+
+    return base;
 }
 
 /**
@@ -417,10 +471,8 @@ int Menu_SelectNext(uint8_t isAllowRoll)
 int Menu_Task(void)
 {
     int i;
-    
     MenuRegister_t *pMenu;
-    char *parrszDesc[MENU_MAX_NUM];
-    void *pExtendData[MENU_MAX_NUM];
+    MenuShow_t tMenuShow;
 
     if (sg_tMenuManage.pMenuCtrl == NULL)
     {
@@ -443,27 +495,31 @@ int Menu_Task(void)
     
     if (!sg_tMenuManage.pMenuCtrl->isRunCallback)
     {
+        tMenuShow.totalNum = sg_tMenuManage.pMenuCtrl->totalNum;
+        tMenuShow.select = sg_tMenuManage.pMenuCtrl->select;
+        tMenuShow.show.num = sg_tMenuManage.pMenuCtrl->showNum;
+        tMenuShow.show.base = GetShowBase(tMenuShow.show.num, tMenuShow.show.base, tMenuShow.select);
+
         if (sg_tMenuManage.isEnglish)
         {
-            for (i = 0; i < sg_tMenuManage.pMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+            for (i = 0; i < tMenuShow.totalNum && i < MENU_MAX_NUM; i++)
             {
-                parrszDesc[i] = (char *)pMenu[i].pszEnDesc;
-                pExtendData[i] = pMenu[i].pExtendData;
+                tMenuShow.pszDesc[i] = (char *)pMenu[i].pszEnDesc;
+                tMenuShow.pExtendData[i] = pMenu[i].pExtendData;
             }        
         }
         else
         {
-            for (i = 0; i < sg_tMenuManage.pMenuCtrl->menuNum && i < MENU_MAX_NUM; i++)
+            for (i = 0; i < tMenuShow.totalNum && i < MENU_MAX_NUM; i++)
             {
-                parrszDesc[i] = (char *)pMenu[i].pszDesc;
-                pExtendData[i] = pMenu[i].pExtendData;
+                tMenuShow.pszDesc[i] = (char *)pMenu[i].pszDesc;
+                tMenuShow.pExtendData[i] = pMenu[i].pExtendData;
             }        
         }
 
         if (sg_tMenuManage.pMenuCtrl->pfnShowMenuFun != NULL)
         {
-            sg_tMenuManage.pMenuCtrl->pfnShowMenuFun(sg_tMenuManage.pMenuCtrl->menuNum, 
-                        sg_tMenuManage.pMenuCtrl->select, (const char **)parrszDesc, pExtendData);
+            sg_tMenuManage.pMenuCtrl->pfnShowMenuFun(&tMenuShow);
         }
     }
     else
