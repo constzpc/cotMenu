@@ -107,7 +107,7 @@ extern int Menu_DeInit(void);
 extern int Menu_SetEnglish(menubool isEnable);
 extern int Menu_SetMenuShowLimit(menubool showNum);
 
-extern int Menu_ResetMainMenu(void);
+extern int Menu_Reset(void);
 
 extern menubool Menu_IsRun(void);
 extern menubool Menu_IsMainMenu(void);

@@ -207,18 +207,28 @@ int Menu_SetMenuShowLimit(menubool showNum)
 }
 
 /**
-  * @brief      返回主菜单界面
+  * @brief      复位菜单, 回到主菜单界面
   * 
+  * @note       该复位回到主菜单不会执行退出所需要执行的回调函数
   * @return     0,成功; -1,失败 
   */
-int Menu_ResetMainMenu(void)
+int Menu_Reset(void)
 {
     if (sg_tMenuManage.pMenuCtrl == NULL)
     {
         return -1;
     }
 
-    while (Menu_Exit(1) == 0);
+    while (sg_tMenuManage.pMenuCtrl->pParentMenuCtrl != NULL)
+    {
+        MenuCtrl_t *pMenuCtrl = sg_tMenuManage.pMenuCtrl;
+
+        sg_tMenuManage.pMenuCtrl = sg_tMenuManage.pMenuCtrl->pParentMenuCtrl;
+        DeleteMenu(pMenuCtrl);
+    }
+
+    sg_tMenuManage.pMenuCtrl->select = 0;
+    sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_FALSE;
     
     return 0;
 }

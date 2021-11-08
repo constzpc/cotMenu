@@ -250,7 +250,7 @@ void ShowSetMenu(const MenuShow_t *ptShowInfo)
     for (int i = 0; i < ptShowInfo->show.num; i++)
     {
         tmpselect = i + ptShowInfo->show.base;
-        
+
         if (tmpselect == ptShowInfo->select)
         {
             printf("> %-10s\n", ptShowInfo->pszDesc[tmpselect]);
@@ -298,7 +298,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                    printf("选择操作(0-返回; 1-返回主菜单; 2-进入; 3-下一个; 4-上一个): ");
+                    printf("选择操作(0-返回; 1-层层返回主菜单; 2-进入; 3-下一个; 4-上一个): ");
                 }
                 
                 scanf(" %d", &cmd); // 空格作用是忽略上次的回车
@@ -318,7 +318,7 @@ int main(int argc, char **argv)
                 case 1:
                     if (!Menu_IsMainMenu())
                     {
-                        Menu_ResetMainMenu();
+                        while(Menu_Exit(0) == 0);
                     }
                     break;
                 case 2:
@@ -336,7 +336,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                printf("选择操作(0-返回; 1-返回主菜单): ");
+                printf("选择操作(0-返回; 1-复位回到主菜单): ");
                 scanf(" %d", &cmd); // 空格作用是忽略上次的回车
 
                 if (cmd == 0)
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
                 }
                 else if (cmd == 1)
                 {
-                    Menu_ResetMainMenu();;
+                    Menu_Reset();;
                 }
             }
         }
