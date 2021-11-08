@@ -285,8 +285,8 @@ int Menu_Enter(void)
             pMenuCtrl->select = 0;
             pMenuCtrl->isRunCallback = MENU_FALSE;
 
-            sg_tMenuManage.pMenuCtrl = pMenuCtrl;
             sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnEnterCallFun;
+            sg_tMenuManage.pMenuCtrl = pMenuCtrl;
             return 0;
         }
     }
