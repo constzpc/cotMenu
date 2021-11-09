@@ -1,21 +1,25 @@
-# 轻量级菜单框架
+# Lightweight menu framework(C)
 
 #### Description
-1、采用链表或数组的方式实现多级菜单（通过配置选择）；
-2、菜单框架更为独立，不耦合按键模块和显示模块，及菜单显示效果更自由；
-3、使用方便
+1.  The multi-level menu is realized by linked list
+
+2.  The menu frame is more independent and does not couple the key module and the display module, that is, the menu display effect is more free
+
+3.  Easy to use
 
 #### Software Architecture
 Software architecture description
 
 #### Instructions
 
-1.  使用前初始化函数 Menu_Init, 设置主菜单内容
-2.  周期调用函数 Menu_Task, 用来处理菜单显示和执行相关回调函数
-3.  使用其他函数对菜单界面控制
+1.  Initialize function Menu_Init before use to set the contents of the main menu
+
+2.  Cycle call function Menu_Task, which is used to handle menu display and execute related callback functions
+   
+3.  Use other functions to control the menu interface
 
 #### Author
-1.  CSDN 博客 blog.csdn.com
-2.  联系邮箱 const_zpc@163.com
-3.  欢迎大家评论和维护
+1.  CSDN  blog.csdn.com
+2.  email const_zpc@163.com
+3.  Welcome to comment and maintain
 
