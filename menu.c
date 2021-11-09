@@ -34,11 +34,11 @@
 typedef struct MenuCtrl
 {
     struct MenuCtrl    *pParentMenuCtrl;    /*!< 父菜单控制处理 */
-    ShowMenuCallFun_f   pfnShowMenuFun;     /*!< 菜单显示效果函数 */
-    MenuRegister_t     *pMenuInfo;          /*!< 菜单选项内容 */
-    menusize_t          totalNum;           /*!< 当前菜单选项总数目 */
-    menusize_t          showNum;            /*!< 当前菜单选项需要显示的数目 */
-    menusize_t          select;             /*!< 当前菜单选中的选项 */
+    ShowMenuCallFun_f   pfnShowMenuFun;     /*!< 当前菜单显示效果函数 */
+    MenuRegister_t     *pMenuInfo;          /*!< 当前菜单选项信息 */
+    menusize_t          itemsNum;           /*!< 当前菜单选项总数目 */
+    menusize_t          showBaseItem;       /*!< 当前菜单首个显示的选项 */
+    menusize_t          selectItem;         /*!< 当前菜单选中的选项 */
     menubool            isRunCallback;      /*!< 是否执行回调功能函数 */
 }MenuCtrl_t;
 
@@ -131,9 +131,9 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
         pMenuCtrl->pParentMenuCtrl = NULL;
         pMenuCtrl->pfnShowMenuFun = fpnShowMenu;
         pMenuCtrl->pMenuInfo = pMainMenu;
-        pMenuCtrl->totalNum = num;
-        pMenuCtrl->showNum = num;
-        pMenuCtrl->select = 0;
+        pMenuCtrl->itemsNum = num;
+        pMenuCtrl->selectItem = 0;
+        pMenuCtrl->showBaseItem = 0;
         pMenuCtrl->isRunCallback = MENU_FALSE;
 
         sg_tMenuManage.pMenuCtrl = pMenuCtrl;
@@ -168,6 +168,16 @@ int Menu_DeInit(void)
 }
 
 /**
+  * @brief      是否为英文显示
+  * 
+  * @return     MENU_FALSE,中文; MENU_TRUE,英文 
+  */
+menubool Menu_IsEnglish(void)
+{
+    return sg_tMenuManage.isEnglish;
+}
+
+/**
   * @brief      设置英文显示
   * 
   * @param[in]  isEnable 使能英文显示
@@ -175,34 +185,7 @@ int Menu_DeInit(void)
   */
 int Menu_SetEnglish(menubool isEnable)
 {
-    if (sg_tMenuManage.pMenuCtrl == NULL)
-    {
-        return -1;
-    }
-
     sg_tMenuManage.isEnglish = isEnable;
-    return 0;
-}
-
-/**
-  * @brief      设置菜单显示限制
-  * 
-  * @note       设置成功后, 子菜单会延续父菜单的显示限制, 若需要单独设置子菜单显示限制，可通过菜单选项中的进入时执行函数设置
-  * @param[in]  showNum 限制需要显示的数目
-  * @return     0,成功; -1,失败
-  */
-int Menu_SetMenuShowLimit(menubool showNum)
-{
-    if (sg_tMenuManage.pMenuCtrl == NULL)
-    {
-        return -1;
-    }
-
-    if (showNum < sg_tMenuManage.pMenuCtrl->totalNum)
-    {
-        sg_tMenuManage.pMenuCtrl->showNum = showNum;
-    }
-    
     return 0;
 }
 
@@ -227,7 +210,7 @@ int Menu_Reset(void)
         DeleteMenu(pMenuCtrl);
     }
 
-    sg_tMenuManage.pMenuCtrl->select = 0;
+    sg_tMenuManage.pMenuCtrl->selectItem = 0;
     sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_FALSE;
     
     return 0;
@@ -297,31 +280,30 @@ int Menu_Enter(void)
         return -1;
     }
 
-    if (sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].subMenuNum != 0)
+    if (sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].subMenuNum != 0)
     {
         sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_FALSE;
 
         if ((pMenuCtrl = NewMenu()) != NULL)
         {
             pMenuCtrl->pParentMenuCtrl = sg_tMenuManage.pMenuCtrl;
-            pMenuCtrl->pMenuInfo = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pSubMenu;
-            pMenuCtrl->totalNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].subMenuNum;
-            pMenuCtrl->showNum = sg_tMenuManage.pMenuCtrl->showNum;
+            pMenuCtrl->pMenuInfo = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pSubMenu;
+            pMenuCtrl->itemsNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].subMenuNum;
 
             /* 若子菜单没有设置显示风格，则延续上个菜单界面的 */
-            if (sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnShowMenuFun != NULL)
+            if (sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnShowMenuFun != NULL)
             {
-                pMenuCtrl->pfnShowMenuFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnShowMenuFun;
+                pMenuCtrl->pfnShowMenuFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnShowMenuFun;
             }
             else
             {
                 pMenuCtrl->pfnShowMenuFun = sg_tMenuManage.pMenuCtrl->pfnShowMenuFun;
             }
             
-            pMenuCtrl->select = 0;
+            pMenuCtrl->selectItem = 0;
             pMenuCtrl->isRunCallback = MENU_FALSE;
 
-            sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnEnterCallFun;
+            sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnEnterCallFun;
             sg_tMenuManage.pMenuCtrl = pMenuCtrl;
             return 0;
         }
@@ -329,7 +311,7 @@ int Menu_Enter(void)
     else
     {
         sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_TRUE;
-        sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnEnterCallFun;
+        sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnEnterCallFun;
         return 0;
     }
 
@@ -352,7 +334,7 @@ int Menu_Exit(uint8_t isReset)
     if (sg_tMenuManage.pMenuCtrl->isRunCallback)
     {
         sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_FALSE;
-        sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnExitCallFun;
+        sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnExitCallFun;
     }
     else
     {
@@ -361,11 +343,11 @@ int Menu_Exit(uint8_t isReset)
             MenuCtrl_t *pMenuCtrl = sg_tMenuManage.pMenuCtrl;
 
             sg_tMenuManage.pMenuCtrl = sg_tMenuManage.pMenuCtrl->pParentMenuCtrl;
-            sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->select].pfnExitCallFun;
+            sg_tMenuManage.pfnExitCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pfnExitCallFun;
             
             if (isReset)
             {
-                sg_tMenuManage.pMenuCtrl->select = 0;
+                sg_tMenuManage.pMenuCtrl->selectItem = 0;
             }
 
             DeleteMenu(pMenuCtrl);
@@ -392,19 +374,19 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
         return -1;
     }
 
-    if (sg_tMenuManage.pMenuCtrl->select > 0)
+    if (sg_tMenuManage.pMenuCtrl->selectItem > 0)
     {
-        sg_tMenuManage.pMenuCtrl->select--;
+        sg_tMenuManage.pMenuCtrl->selectItem--;
     }
     else
     {
         if (isAllowRoll)
         {
-            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->totalNum - 1;
+            sg_tMenuManage.pMenuCtrl->selectItem = sg_tMenuManage.pMenuCtrl->itemsNum - 1;
         }
         else
         {
-            sg_tMenuManage.pMenuCtrl->select = 0;
+            sg_tMenuManage.pMenuCtrl->selectItem = 0;
             return -1;
         }        
     }
@@ -425,19 +407,19 @@ int Menu_SelectNext(uint8_t isAllowRoll)
         return -1;
     }
 
-    if (sg_tMenuManage.pMenuCtrl->select < (sg_tMenuManage.pMenuCtrl->totalNum - 1))
+    if (sg_tMenuManage.pMenuCtrl->selectItem < (sg_tMenuManage.pMenuCtrl->itemsNum - 1))
     {
-        sg_tMenuManage.pMenuCtrl->select++;
+        sg_tMenuManage.pMenuCtrl->selectItem++;
     }
     else
     {
         if (isAllowRoll)
         {
-            sg_tMenuManage.pMenuCtrl->select = 0;
+            sg_tMenuManage.pMenuCtrl->selectItem = 0;
         }
         else
         {
-            sg_tMenuManage.pMenuCtrl->select = sg_tMenuManage.pMenuCtrl->totalNum - 1;
+            sg_tMenuManage.pMenuCtrl->selectItem = sg_tMenuManage.pMenuCtrl->itemsNum - 1;
             return -1;
         }
     }
@@ -474,6 +456,42 @@ static menusize_t GetShowBase(menusize_t showNum, menusize_t currBase, menusize_
 }
 
 /**
+  * @brief      更新当前菜单首个显示的选项
+  * 
+  * @note       可在菜单显示效果回调函数中使用
+  * @param[in]  tMenuShow   当前菜单显示信息
+  * @param[in]  showNum     当前菜单中需要显示的选项数目
+  * @return     当前菜单首个显示的选项 
+  */
+int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t showNum)
+{
+    if (ptMenuShow == NULL)
+    {
+        return -1;
+    }
+
+    if (showNum > ptMenuShow->itemsNum)
+    {
+        showNum = ptMenuShow->itemsNum;
+    }
+
+    if (ptMenuShow->selectItem < ptMenuShow->showBaseItem)
+    {
+        ptMenuShow->showBaseItem = ptMenuShow->selectItem;
+    }
+    else if ((ptMenuShow->selectItem - ptMenuShow->showBaseItem) >= showNum)
+    {
+        ptMenuShow->showBaseItem = ptMenuShow->selectItem - showNum + 1;
+    }
+    else
+    {
+        // 保持
+    }
+
+    return 0;
+}
+
+/**
   * @brief  菜单任务
   * 
   * @return 0,成功, 处于菜单模式下; -1,失败, 未处于菜单模式下 
@@ -505,25 +523,24 @@ int Menu_Task(void)
     
     if (!sg_tMenuManage.pMenuCtrl->isRunCallback)
     {
-        tMenuShow.totalNum = sg_tMenuManage.pMenuCtrl->totalNum;
-        tMenuShow.select = sg_tMenuManage.pMenuCtrl->select;
-        tMenuShow.show.num = sg_tMenuManage.pMenuCtrl->showNum;
-        tMenuShow.show.base = GetShowBase(tMenuShow.show.num, tMenuShow.show.base, tMenuShow.select);
+        tMenuShow.itemsNum = sg_tMenuManage.pMenuCtrl->itemsNum;
+        tMenuShow.selectItem = sg_tMenuManage.pMenuCtrl->selectItem;
+        tMenuShow.showBaseItem = sg_tMenuManage.pMenuCtrl->showBaseItem;
 
         if (sg_tMenuManage.isEnglish)
         {
-            for (i = 0; i < tMenuShow.totalNum && i < MENU_MAX_NUM; i++)
+            for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
-                tMenuShow.pszDesc[i] = (char *)pMenu[i].pszEnDesc;
-                tMenuShow.pExtendData[i] = pMenu[i].pExtendData;
+                tMenuShow.pszItemsDesc[i] = (char *)pMenu[i].pszEnDesc;
+                tMenuShow.pItemsExData[i] = pMenu[i].pExtendData;
             }        
         }
         else
         {
-            for (i = 0; i < tMenuShow.totalNum && i < MENU_MAX_NUM; i++)
+            for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
-                tMenuShow.pszDesc[i] = (char *)pMenu[i].pszDesc;
-                tMenuShow.pExtendData[i] = pMenu[i].pExtendData;
+                tMenuShow.pszItemsDesc[i] = (char *)pMenu[i].pszDesc;
+                tMenuShow.pItemsExData[i] = pMenu[i].pExtendData;
             }        
         }
 
@@ -531,12 +548,14 @@ int Menu_Task(void)
         {
             sg_tMenuManage.pMenuCtrl->pfnShowMenuFun(&tMenuShow);
         }
+
+        sg_tMenuManage.pMenuCtrl->showBaseItem = tMenuShow.showBaseItem;
     }
     else
     {
-        if (pMenu[sg_tMenuManage.pMenuCtrl->select].pfnMenuCallFun != NULL)
+        if (pMenu[sg_tMenuManage.pMenuCtrl->selectItem].pfnRunCallFun != NULL)
         {
-            pMenu[sg_tMenuManage.pMenuCtrl->select].pfnMenuCallFun();
+            pMenu[sg_tMenuManage.pMenuCtrl->selectItem].pfnRunCallFun();
         }
     }
 

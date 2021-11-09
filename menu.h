@@ -50,24 +50,18 @@ typedef void (*MenuCallFun_f)(void);
 
 typedef struct
 {
-    menusize_t totalNum;            /*!< 当前菜单中选项的总数目 */
+    menusize_t itemsNum;            /*!< 当前菜单中选项的总数目 */
 
-    menusize_t select;              /*!< 当前菜单中被选中的选项 */
+    menusize_t selectItem;          /*!< 当前菜单中被选中的选项 */
 
-    /* 显示限制相关参数(特别是因为显示平台限制而每次只能显示部分选项的情况) */
-    struct 
-    {
-        menusize_t base;            /*!< 当前菜单中首个显示的选项 */
-
-        menusize_t num;             /*!< 当前菜单中需要显示的选项数目 */
-    } show;
+    menusize_t showBaseItem;        /*!< 当前菜单首个显示的选项 */
     
-    char *pszDesc[MENU_MAX_NUM];    /*!< 当前菜单中所有选项的字符串描述 */
+    char *pszItemsDesc[MENU_MAX_NUM];/*!< 当前菜单中所有选项的字符串描述 */
 
-    void *pExtendData[MENU_MAX_NUM];/*!< 当前菜单中所有选项的扩展数据 */
+    void *pItemsExData[MENU_MAX_NUM];/*!< 当前菜单中所有选项注册时的扩展数据 */
 } MenuShow_t;
 
-typedef void (*ShowMenuCallFun_f)(const MenuShow_t *ptShowInfo); 
+typedef void (*ShowMenuCallFun_f)(MenuShow_t *ptShowInfo); 
 
 /**
   * @brief 菜单信息注册结构体
@@ -89,7 +83,7 @@ typedef struct MenuRegister
 
     MenuCallFun_f     pfnExitCallFun;   /*!< 当前选项进入后在退出时需要执行的函数, 为NULL不执行 */
 
-    MenuCallFun_f     pfnMenuCallFun;   /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效, 为NULL不执行 */
+    MenuCallFun_f     pfnRunCallFun;    /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效, 为NULL不执行 */
 
     void             *pExtendData;      /*!< 当前选项的菜单显示效果函数扩展数据入参, 可自行设置该内容 */
 }MenuRegister_t;
@@ -101,24 +95,30 @@ typedef struct MenuRegister
 
 /* Exported functions ------------------------------------------------------------------------------------------------*/
 
+/* 菜单初始化和反初始化 */
 extern int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu);
 extern int Menu_DeInit(void);
 
+/* 菜单功能设置 */
+extern menubool Menu_IsEnglish(void);
 extern int Menu_SetEnglish(menubool isEnable);
-extern int Menu_SetMenuShowLimit(menubool showNum);
 
-extern int Menu_Reset(void);
+/* 菜单选项显示时需要使用的功能扩展函数 */
+extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t showNum);
 
+/* 菜单状态获取函数 */
 extern menubool Menu_IsRun(void);
 extern menubool Menu_IsMainMenu(void);
 extern menubool Menu_IsAtMenu(void);
 
+/* 菜单操作 */
+extern int Menu_Reset(void);
 extern int Menu_Enter(void);
 extern int Menu_Exit(uint8_t isReset);
-
 extern int Menu_SelectPrevious(uint8_t isAllowRoll);
 extern int Menu_SelectNext(uint8_t isAllowRoll);
 
+/* 菜单轮询处理任务 */
 extern int Menu_Task(void);
 
 #endif // MENU_H
