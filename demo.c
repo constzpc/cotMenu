@@ -201,7 +201,7 @@ void ShowMainMenu(MenuShow_t *ptShowInfo)
     MenuImage_t *pMenuImage;
     menusize_t  tmpselect;
 
-    Menu_UpdateShowBase(ptShowInfo, showNum);
+    Menu_UpdateShowBase(ptShowInfo, &showNum);
 
     for (int i = 0; i < showNum; i++)
     {
@@ -261,7 +261,7 @@ void ShowSetMenu(MenuShow_t *ptShowInfo)
     uint8_t showNum = 3;
     menusize_t  tmpselect;
 
-    Menu_UpdateShowBase(ptShowInfo, showNum);
+    Menu_UpdateShowBase(ptShowInfo, &showNum);
 
     for (int i = 0; i < showNum; i++)
     {

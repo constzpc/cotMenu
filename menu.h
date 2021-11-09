@@ -104,7 +104,7 @@ extern menubool Menu_IsEnglish(void);
 extern int Menu_SetEnglish(menubool isEnable);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
-extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t showNum);
+extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
 
 /* 菜单状态获取函数 */
 extern menubool Menu_IsRun(void);

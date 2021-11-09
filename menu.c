@@ -428,60 +428,32 @@ int Menu_SelectNext(uint8_t isAllowRoll)
 }
 
 /**
-  * @brief      获取当前菜单中首个显示的选项
-  * 
-  * @param[in]  showNum     当前菜单中需要显示的选项数目
-  * @param[in]  currBase    目前首个显示的选项
-  * @param[in]  select      当前菜单中被选中的选项
-  * @return     新首个显示的选项 
-  */
-static menusize_t GetShowBase(menusize_t showNum, menusize_t currBase, menusize_t select)
-{
-    menusize_t base = currBase;
-
-    if (select < currBase)
-    {
-        base = select;
-    }
-    else if ((select - currBase) >= showNum)
-    {
-        base = select - showNum + 1;
-    }
-    else
-    {
-        base = currBase;
-    }
-
-    return base;
-}
-
-/**
   * @brief      更新当前菜单首个显示的选项
   * 
   * @note       可在菜单显示效果回调函数中使用
-  * @param[in]  tMenuShow   当前菜单显示信息
-  * @param[in]  showNum     当前菜单中需要显示的选项数目
-  * @return     当前菜单首个显示的选项 
+  * @param[in,out]  tMenuShow   当前菜单显示信息
+  * @param[in,out]  showNum     当前菜单中需要显示的选项数目, 根据当前菜单选项的总数得到最终的显示的选项数目
+  * @return     0,成功; -1,失败 
   */
-int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t showNum)
+int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
 {
-    if (ptMenuShow == NULL)
+    if (ptMenuShow == NULL || pShowNum == NULL)
     {
         return -1;
     }
 
-    if (showNum > ptMenuShow->itemsNum)
+    if (*pShowNum > ptMenuShow->itemsNum)
     {
-        showNum = ptMenuShow->itemsNum;
+        *pShowNum = ptMenuShow->itemsNum;
     }
 
     if (ptMenuShow->selectItem < ptMenuShow->showBaseItem)
     {
         ptMenuShow->showBaseItem = ptMenuShow->selectItem;
     }
-    else if ((ptMenuShow->selectItem - ptMenuShow->showBaseItem) >= showNum)
+    else if ((ptMenuShow->selectItem - ptMenuShow->showBaseItem) >= *pShowNum)
     {
-        ptMenuShow->showBaseItem = ptMenuShow->selectItem - showNum + 1;
+        ptMenuShow->showBaseItem = ptMenuShow->selectItem - *pShowNum + 1;
     }
     else
     {
