@@ -162,6 +162,8 @@ void OnLanguageFunction(void)
     {
         Menu_SetEnglish(MENU_TRUE);
     }
+
+    Menu_Exit(0); // 切换后自动退出
 }
 
 void OnAboutMenuFunction(void)
@@ -283,6 +285,12 @@ int main(int argc, char **argv)
 
     while (1)
     {
+        CLEAR();
+        MOVETO(0, 0);
+        Menu_Task();
+
+        /* 重新执行一次原因: 由于scanf阻塞问题, Menu_Task不能定时执行, 因此在某些在执行非菜单功能函数时若调用了菜单操作函数等
+           （如实现非菜单功能函数自动退出功能）不能及时更新菜单状态, 通过重新执行一次刷新显示状态解决该问题 */
         CLEAR();
         MOVETO(0, 0);
         Menu_Task();
