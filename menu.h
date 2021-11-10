@@ -119,9 +119,9 @@ extern menubool Menu_IsAtMenu(void);
 /* 菜单操作 */
 extern int Menu_Reset(void);
 extern int Menu_Enter(void);
-extern int Menu_Exit(uint8_t isReset);
-extern int Menu_SelectPrevious(uint8_t isAllowRoll);
-extern int Menu_SelectNext(uint8_t isAllowRoll);
+extern int Menu_Exit(menubool isReset);
+extern int Menu_SelectPrevious(menubool isAllowRoll);
+extern int Menu_SelectNext(menubool isAllowRoll);
 extern int Menu_EnterShortcutMenu(int8_t id);
 
 /* 菜单轮询处理任务 */

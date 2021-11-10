@@ -427,7 +427,7 @@ int Menu_Enter(void)
   * @param[in]  isReset 菜单选项是否从头选择
   * @return     0,成功; -1,失败, 即目前处于主菜单, 无法返回
   */
-int Menu_Exit(uint8_t isReset)
+int Menu_Exit(menubool isReset)
 {
     if (sg_tMenuManage.pMenuCtrl == NULL)
     {
@@ -470,7 +470,7 @@ int Menu_Exit(uint8_t isReset)
   * @param[in]  isAllowRoll 第一个选项时是否从跳转到最后一个选项
   * @return     0,成功; -1,失败
   */
-int Menu_SelectPrevious(uint8_t isAllowRoll)
+int Menu_SelectPrevious(menubool isAllowRoll)
 {
     if (sg_tMenuManage.pMenuCtrl == NULL || sg_tMenuManage.pMenuCtrl->isRunCallback)
     {
@@ -503,7 +503,7 @@ int Menu_SelectPrevious(uint8_t isAllowRoll)
   * @param[in]  isAllowRoll 最后一个选项时是否跳转到第一个选项
   * @return     0,成功; -1,失败 
   */
-int Menu_SelectNext(uint8_t isAllowRoll)
+int Menu_SelectNext(menubool isAllowRoll)
 {
     if (sg_tMenuManage.pMenuCtrl == NULL || sg_tMenuManage.pMenuCtrl->isRunCallback)
     {
