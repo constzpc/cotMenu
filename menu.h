@@ -33,6 +33,9 @@
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM            20
 
+/* 快捷选择项支持的最大数目 */
+#define MENU_MAX_SHORTCUT_NUM   5
+
 /******************************************* 配置项 ********************************************************************/
 
 
@@ -102,6 +105,8 @@ extern int Menu_DeInit(void);
 /* 菜单功能设置 */
 extern menubool Menu_IsEnglish(void);
 extern int Menu_SetEnglish(menubool isEnable);
+extern int Menu_AddShortcutMenu(MenuRegister_t *pMenuPath);
+extern int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
@@ -117,6 +122,7 @@ extern int Menu_Enter(void);
 extern int Menu_Exit(uint8_t isReset);
 extern int Menu_SelectPrevious(uint8_t isAllowRoll);
 extern int Menu_SelectNext(uint8_t isAllowRoll);
+extern int Menu_EnterShortcutMenu(int8_t id);
 
 /* 菜单轮询处理任务 */
 extern int Menu_Task(void);

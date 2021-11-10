@@ -46,6 +46,7 @@ typedef struct
 {
     MenuCtrl_t        *pMenuCtrl;           /*!< 当前菜单控制处理 */
     menubool           isEnglish;           /*!< 是否切换成英文 */
+    MenuRegister_t    *pShortcutMenuAddr[MENU_MAX_SHORTCUT_NUM];/*!< 快捷选择项列表 */
     MenuCallFun_f      pfnEnterCallFun;     /*!< 当前选项进入所执行的函数 */
     MenuCallFun_f      pfnExitCallFun;      /*!< 当前选项退出所执行的函数 */
 }MenuManage_t;
@@ -112,6 +113,7 @@ static void DeleteMenu(MenuCtrl_t *pMenu)
   */
 int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu)
 {
+    int i;
     MenuCtrl_t *pMenuCtrl = NULL;
 
     if (sg_tMenuManage.pMenuCtrl != NULL)
@@ -125,6 +127,11 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
     sg_tMenuManage.isEnglish = MENU_FALSE;
     sg_tMenuManage.pfnEnterCallFun = NULL;
     sg_tMenuManage.pfnExitCallFun = NULL;
+
+    for (i = 0; i < MENU_MAX_SHORTCUT_NUM; i++)
+    {
+        sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+    }
 
     if ((pMenuCtrl = NewMenu()) != NULL)
     {
@@ -186,6 +193,102 @@ menubool Menu_IsEnglish(void)
 int Menu_SetEnglish(menubool isEnable)
 {
     sg_tMenuManage.isEnglish = isEnable;
+    return 0;
+}
+
+/**
+ * @brief       查询快捷菜单选择项信息指针是否存在
+ * 
+ * @param[out]  pPathId     所在父菜单的索引号
+ * @param[in]   pMenuItem   快捷菜单选择项信息指针
+ * @param[in]   pMenuList   菜单列表
+ * @param[in]   menuNum     菜单数目
+ * @return      MENU_FALSE,不存在; MENU_TRUE,存在 
+ */
+static menubool FindMenu(int8_t *pPathId, const MenuRegister_t *pMenuItem, const MenuRegister_t *pMenuList, menusize_t menuNum)
+{
+    int i;
+
+    if (pMenuItem == NULL || pMenuList == NULL || menuNum == 0)
+    {
+        return MENU_FALSE;
+    }
+
+    for (i = 0; i < menuNum; i++)
+    {
+        *pPathId = i;
+
+        if (pMenuItem != (&pMenuList[i]))
+        {
+            if (FindMenu(pPathId + 1, pMenuItem, pMenuList[i].pSubMenu, pMenuList[i].subMenuNum))
+            {
+                return MENU_TRUE;
+            }
+        }
+        else
+        {
+            *(pPathId + 1) = -1;
+            return MENU_TRUE;
+        }
+    }
+
+    return MENU_FALSE;
+}
+
+/**
+  * @brief      添加快捷菜单选择项
+  * 
+  * @param[in]  pMenuAddr 选择项信息指针
+  * @return     -1,失败; 其他,快捷菜单选择项ID
+  */
+int Menu_AddShortcutMenu(MenuRegister_t *pMenuAddr)
+{
+    int idx = 0;
+    int8_t pathId[10];
+
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx++] != NULL);
+    
+    if (idx == MENU_MAX_SHORTCUT_NUM)
+    {
+        return -1;
+    }
+
+    idx--;
+    sg_tMenuManage.pShortcutMenuAddr[idx] = pMenuAddr;
+
+    if (!FindMenu(pathId, pMenuAddr, sg_tMenuManage.pMenuCtrl->pMenuInfo, sg_tMenuManage.pMenuCtrl->itemsNum))
+    {
+        return -1;
+    }
+
+    return idx;
+}
+
+/**
+  * @brief      删除快捷菜单选择项
+  * 
+  * @param[in]  pMenuAddr 选择项信息指针
+  * @return     0,成功; -1,失败
+  */
+int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath)
+{
+    int i, idx = 0;
+
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx++] != NULL);
+    
+    for (i = idx; i < MENU_MAX_SHORTCUT_NUM; i++)
+    {
+        if (i == MENU_MAX_SHORTCUT_NUM - 1)
+        {
+            sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+        }
+        else
+        {
+            sg_tMenuManage.pShortcutMenuAddr[i] = sg_tMenuManage.pShortcutMenuAddr[i + 1];
+        }
+        
+    }
+
     return 0;
 }
 
@@ -423,6 +526,78 @@ int Menu_SelectNext(uint8_t isAllowRoll)
             return -1;
         }
     }
+
+    return 0;
+}
+
+
+/**
+  * @brief      在菜单界面通过快捷菜单id进入
+  * 
+  * @param[in]  id 选择项id, 即通过函数 Menu_AddShortcutMenu 获取的id
+  * @return     0,成功; -1,失败
+  */
+int Menu_EnterShortcutMenu(int8_t id)
+{
+    MenuCtrl_t *pMenuCtrl = NULL;
+    uint8_t depth = 0;
+    int8_t pathId[10];
+
+    if (sg_tMenuManage.pMenuCtrl == NULL || sg_tMenuManage.pMenuCtrl->isRunCallback)
+    {
+        return -1;
+    }
+
+    if (id < 0 || id >= MENU_MAX_SHORTCUT_NUM || sg_tMenuManage.pShortcutMenuAddr[id] == NULL)
+    {
+        return -1;
+    }
+
+    if (!FindMenu(pathId, sg_tMenuManage.pShortcutMenuAddr[id], sg_tMenuManage.pMenuCtrl->pMenuInfo, sg_tMenuManage.pMenuCtrl->itemsNum))
+    {
+        return -1;
+    }
+
+    while (pathId[depth] != -1)
+    {
+        sg_tMenuManage.pMenuCtrl->selectItem = pathId[depth];
+        
+        if (sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].subMenuNum != 0)
+        {
+            sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_FALSE;
+
+            if ((pMenuCtrl = NewMenu()) != NULL)
+            {
+                pMenuCtrl->pParentMenuCtrl = sg_tMenuManage.pMenuCtrl;
+                pMenuCtrl->pMenuInfo = sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].pSubMenu;
+                pMenuCtrl->itemsNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].subMenuNum;
+
+                /* 若子菜单没有设置显示风格，则延续上个菜单界面的 */
+                if (sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].pfnShowMenuFun != NULL)
+                {
+                    pMenuCtrl->pfnShowMenuFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].pfnShowMenuFun;
+                }
+                else
+                {
+                    pMenuCtrl->pfnShowMenuFun = sg_tMenuManage.pMenuCtrl->pfnShowMenuFun;
+                }
+                
+                pMenuCtrl->selectItem = 0;
+                pMenuCtrl->isRunCallback = MENU_FALSE;
+
+                sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].pfnEnterCallFun;
+                sg_tMenuManage.pMenuCtrl = pMenuCtrl;
+            }
+        }
+        else
+        {
+            sg_tMenuManage.pMenuCtrl->isRunCallback = MENU_TRUE;
+            sg_tMenuManage.pfnEnterCallFun = sg_tMenuManage.pMenuCtrl->pMenuInfo[pathId[depth]].pfnEnterCallFun;
+            return 0;
+        }
+
+        depth++;
+    } 
 
     return 0;
 }

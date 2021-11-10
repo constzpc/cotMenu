@@ -282,6 +282,7 @@ void ShowSetMenu(MenuShow_t *ptShowInfo)
 int main(int argc, char **argv)
 {
     int ret, cmd = 0;
+    int8_t musicMenuId, languageMenuId, moreSetMenuId;
 
     while (1)
     {
@@ -302,7 +303,11 @@ int main(int argc, char **argv)
 
             if (cmd == 0)
             {
-                Menu_Init(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu); 
+                Menu_Init(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
+
+                musicMenuId = Menu_AddShortcutMenu(&sg_MainMenuTable[0]);
+                languageMenuId = Menu_AddShortcutMenu(&sg_SetMenuTable[0]);
+                moreSetMenuId = Menu_AddShortcutMenu(&sg_SetMenuTable[4]);
             }
             else if (cmd == 1)
             {
@@ -315,11 +320,11 @@ int main(int argc, char **argv)
             {
                 if (Menu_IsMainMenu())
                 {
-                    printf("选择操作(0-退出主菜单; 2-进入; 3-下一个; 4-上一个): ");
+                    printf("选择操作(0-退出主菜单; 2-进入; 3-下一个; 4-上一个; 5-快捷音乐; 6-快捷语言; 7-快捷更多设置): ");
                 }
                 else
                 {
-                    printf("选择操作(0-返回; 1-返回主菜单; 2-进入; 3-下一个; 4-上一个): ");
+                    printf("选择操作(0-返回; 1-返回主菜单; 2-进入; 3-下一个; 4-上一个; 5-快捷音乐; 6-快捷语言; 7-快捷更多设置): ");
                 }
                 
                 scanf(" %d", &cmd); // 空格作用是忽略上次的回车
@@ -333,7 +338,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        Menu_Exit(1);
+                        Menu_Exit(MENU_TRUE);
                     }
                     break;
                 case 1:
@@ -346,11 +351,24 @@ int main(int argc, char **argv)
                     Menu_Enter();
                     break;
                 case 3:
-                    Menu_SelectNext(1);
+                    Menu_SelectNext(MENU_TRUE);
                     break;
                 case 4:
-                    Menu_SelectPrevious(1);
+                    Menu_SelectPrevious(MENU_TRUE);
                     break;
+
+                case 5:
+                    Menu_EnterShortcutMenu(musicMenuId);
+                    break;
+
+                case 6:
+                    Menu_EnterShortcutMenu(languageMenuId);
+                    break;
+
+                case 7:
+                    Menu_EnterShortcutMenu(moreSetMenuId);
+                    break;
+                    
                 default:
                     break;    
                 }
