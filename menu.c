@@ -555,6 +555,8 @@ int Menu_EnterShortcutMenu(int8_t id)
         return -1;
     }
 
+    Menu_Reset();
+
     if (!FindMenu(pathId, sg_tMenuManage.pShortcutMenuAddr[id], sg_tMenuManage.pMenuCtrl->pMenuInfo, sg_tMenuManage.pMenuCtrl->itemsNum))
     {
         return -1;
