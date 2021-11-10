@@ -46,7 +46,7 @@ typedef struct
 {
     MenuCtrl_t        *pMenuCtrl;           /*!< 当前菜单控制处理 */
     menubool           isEnglish;           /*!< 是否切换成英文 */
-    MenuRegister_t    *pShortcutMenuAddr[MENU_MAX_SHORTCUT_NUM];/*!< 快捷选择项列表 */
+    MenuRegister_t    *pShortcutMenuList[MENU_MAX_SHORTCUT_NUM];/*!< 快捷选择项列表 */
     MenuCallFun_f      pfnEnterCallFun;     /*!< 当前选项进入所执行的函数 */
     MenuCallFun_f      pfnExitCallFun;      /*!< 当前选项退出所执行的函数 */
 }MenuManage_t;
@@ -65,6 +65,8 @@ static uint8_t    sg_currMenuDepth = 0;
 /* Private function prototypes ---------------------------------------------------------------------------------------*/
 static MenuCtrl_t *NewMenu(void);
 static void DeleteMenu(MenuCtrl_t *pMenu);
+static MenuCtrl_t *MianMenu(void);
+static menubool FindMenu(int8_t *pPathId, const MenuRegister_t *pMenuItem, const MenuRegister_t *pMenuList, menusize_t menuNum);
 
 /* Private function --------------------------------------------------------------------------------------------------*/
 /**
@@ -106,6 +108,23 @@ static void DeleteMenu(MenuCtrl_t *pMenu)
 }
 
 /**
+  * @brief      得到主菜单控制处理指针
+  * 
+  * @return     MenuCtrl_t* 
+  */
+static MenuCtrl_t *MianMenu(void)
+{
+    MenuCtrl_t *pMenuCtrl = sg_tMenuManage.pMenuCtrl;
+
+    while (pMenuCtrl != NULL && pMenuCtrl->pParentMenuCtrl != NULL)
+    {
+        pMenuCtrl = pMenuCtrl->pParentMenuCtrl;
+    }
+
+    return pMenuCtrl;
+} 
+
+/**
   * @brief      菜单初始化
   * 
   * @param[in]  pMainMenu        主菜单注册信息
@@ -132,7 +151,7 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 
     for (i = 0; i < MENU_MAX_SHORTCUT_NUM; i++)
     {
-        sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+        sg_tMenuManage.pShortcutMenuList[i] = NULL;
     }
 
     if ((pMenuCtrl = NewMenu()) != NULL)
@@ -247,8 +266,9 @@ int Menu_AddShortcutMenu(MenuRegister_t *pMenuAddr)
 {
     int idx = 0;
     int8_t pathId[MENU_MAX_DEPTH + 1];
+    MenuCtrl_t *pMenuCtrl;
 
-    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx++] != NULL);
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuList[idx++] != NULL);
     
     if (idx == MENU_MAX_SHORTCUT_NUM)
     {
@@ -256,9 +276,11 @@ int Menu_AddShortcutMenu(MenuRegister_t *pMenuAddr)
     }
 
     idx--;
-    sg_tMenuManage.pShortcutMenuAddr[idx] = pMenuAddr;
+    sg_tMenuManage.pShortcutMenuList[idx] = pMenuAddr;
 
-    if (!FindMenu(pathId, pMenuAddr, sg_tMenuManage.pMenuCtrl->pMenuInfo, sg_tMenuManage.pMenuCtrl->itemsNum))
+    pMenuCtrl = MianMenu();
+
+    if (!FindMenu(pathId, pMenuAddr, pMenuCtrl->pMenuInfo, pMenuCtrl->itemsNum))
     {
         return -1;
     }
@@ -276,19 +298,19 @@ int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath)
 {
     int i, idx = 0;
 
-    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx] != NULL)
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuList[idx] != NULL)
     {
-        if (sg_tMenuManage.pShortcutMenuAddr[idx] == pMenuPath)
+        if (sg_tMenuManage.pShortcutMenuList[idx] == pMenuPath)
         {
             for (i = idx; i < MENU_MAX_SHORTCUT_NUM; i++)
             {
                 if (i == MENU_MAX_SHORTCUT_NUM - 1)
                 {
-                    sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+                    sg_tMenuManage.pShortcutMenuList[i] = NULL;
                 }
                 else
                 {
-                    sg_tMenuManage.pShortcutMenuAddr[i] = sg_tMenuManage.pShortcutMenuAddr[i + 1];
+                    sg_tMenuManage.pShortcutMenuList[i] = sg_tMenuManage.pShortcutMenuList[i + 1];
                 }
             }
         }
@@ -555,17 +577,19 @@ int Menu_EnterShortcutMenu(int8_t id)
         return -1;
     }
 
-    if (id < 0 || id >= MENU_MAX_SHORTCUT_NUM || sg_tMenuManage.pShortcutMenuAddr[id] == NULL)
+    if (id < 0 || id >= MENU_MAX_SHORTCUT_NUM || sg_tMenuManage.pShortcutMenuList[id] == NULL)
+    {
+        return -1;
+    }
+
+    pMenuCtrl = MianMenu();
+
+    if (!FindMenu(pathId, sg_tMenuManage.pShortcutMenuList[id], pMenuCtrl->pMenuInfo, pMenuCtrl->itemsNum))
     {
         return -1;
     }
 
     Menu_Reset();
-
-    if (!FindMenu(pathId, sg_tMenuManage.pShortcutMenuAddr[id], sg_tMenuManage.pMenuCtrl->pMenuInfo, sg_tMenuManage.pMenuCtrl->itemsNum))
-    {
-        return -1;
-    }
 
     while (pathId[depth] != -1)
     {
