@@ -276,21 +276,26 @@ int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath)
 {
     int i, idx = 0;
 
-    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx++] != NULL);
-    
-    for (i = idx; i < MENU_MAX_SHORTCUT_NUM; i++)
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx] != NULL)
     {
-        if (i == MENU_MAX_SHORTCUT_NUM - 1)
+        if (sg_tMenuManage.pShortcutMenuAddr[idx] == pMenuPath)
         {
-            sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+            for (i = idx; i < MENU_MAX_SHORTCUT_NUM; i++)
+            {
+                if (i == MENU_MAX_SHORTCUT_NUM - 1)
+                {
+                    sg_tMenuManage.pShortcutMenuAddr[i] = NULL;
+                }
+                else
+                {
+                    sg_tMenuManage.pShortcutMenuAddr[i] = sg_tMenuManage.pShortcutMenuAddr[i + 1];
+                }
+            }
         }
-        else
-        {
-            sg_tMenuManage.pShortcutMenuAddr[i] = sg_tMenuManage.pShortcutMenuAddr[i + 1];
-        }
-        
-    }
 
+        idx++;
+    }
+    
     return 0;
 }
 
