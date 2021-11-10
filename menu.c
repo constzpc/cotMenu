@@ -26,7 +26,7 @@
 /* Includes ----------------------------------------------------------------------------------------------------------*/
 #include "menu.h"
 
-#if MENU_MAX_DEPTH == 0
+#ifdef _USE_MALLOC_
 #include <malloc.h>
 #endif
 
@@ -56,10 +56,11 @@ typedef struct
 /* Private variables -------------------------------------------------------------------------------------------------*/
 static MenuManage_t sg_tMenuManage;
 
-#if MENU_MAX_DEPTH != 0
+#ifndef _USE_MALLOC_
 static MenuCtrl_t sg_arrMenuCtrl[MENU_MAX_DEPTH];
-static uint8_t    sg_currMenuDepth = 0;
 #endif
+
+static uint8_t    sg_currMenuDepth = 0;
 
 /* Private function prototypes ---------------------------------------------------------------------------------------*/
 static MenuCtrl_t *NewMenu(void);
@@ -74,14 +75,16 @@ static void DeleteMenu(MenuCtrl_t *pMenu);
 static MenuCtrl_t *NewMenu(void)
 {
     MenuCtrl_t *pMenuCtrl = NULL;
-#if MENU_MAX_DEPTH == 0
-    pMenuCtrl = (MenuCtrl_t *)malloc(sizeof(MenuCtrl_t));
-#else
+
     if (sg_currMenuDepth < MENU_MAX_DEPTH)
     {
-        pMenuCtrl = &sg_arrMenuCtrl[sg_currMenuDepth++];
-    }
+#ifdef _USE_MALLOC_
+        pMenuCtrl = (MenuCtrl_t *)malloc(sizeof(MenuCtrl_t));
+#else  
+        pMenuCtrl = &sg_arrMenuCtrl[sg_currMenuDepth];
 #endif
+        sg_currMenuDepth++;
+    }
 
     return pMenuCtrl;
 }
@@ -93,14 +96,13 @@ static MenuCtrl_t *NewMenu(void)
   */
 static void DeleteMenu(MenuCtrl_t *pMenu)
 {
-#if MENU_MAX_DEPTH == 0
+#ifdef _USE_MALLOC_
     free(pMenu);
-#else
+#endif
     if (sg_currMenuDepth > 0)
     {
         sg_currMenuDepth--;
     }
-#endif   
 }
 
 /**
@@ -244,7 +246,7 @@ static menubool FindMenu(int8_t *pPathId, const MenuRegister_t *pMenuItem, const
 int Menu_AddShortcutMenu(MenuRegister_t *pMenuAddr)
 {
     int idx = 0;
-    int8_t pathId[10];
+    int8_t pathId[MENU_MAX_DEPTH + 1];
 
     while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuAddr[idx++] != NULL);
     
@@ -541,7 +543,7 @@ int Menu_EnterShortcutMenu(int8_t id)
 {
     MenuCtrl_t *pMenuCtrl = NULL;
     uint8_t depth = 0;
-    int8_t pathId[10];
+    int8_t pathId[MENU_MAX_DEPTH + 1];
 
     if (sg_tMenuManage.pMenuCtrl == NULL || sg_tMenuManage.pMenuCtrl->isRunCallback)
     {

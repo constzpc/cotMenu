@@ -22,19 +22,19 @@
 #define NULL 0
 #endif
 
-
-
 /******************************************* 配置项 ********************************************************************/
 
-/* 多级菜单深度, 为0则表示采用 malloc/free 的方式实现多级菜单, 可无限延申, 
-   否则通过数组的形式实现多级菜单,最多为 MENU_MAX_DEPTH */
-#define MENU_MAX_DEPTH          0
+/* 定义 _USE_MALLOC_ 则采用 malloc/free 的方式实现多级菜单, 否则通过数组的形式 */
+// #define _USE_MALLOC_
+
+/* 多级菜单深度 */
+#define MENU_MAX_DEPTH              10
 
 /* 菜单支持的最大选项数目 */
-#define MENU_MAX_NUM            20
+#define MENU_MAX_NUM                20
 
 /* 快捷选择项支持的最大数目 */
-#define MENU_MAX_SHORTCUT_NUM   5
+#define MENU_MAX_SHORTCUT_NUM       5
 
 /******************************************* 配置项 ********************************************************************/
 
