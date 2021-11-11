@@ -1,4 +1,10 @@
 
+/* 菜单显示效果图可看: 
+
+https://blog.csdn.net/qq_24130227/article/details/121167276 
+
+*/
+
 #include "menu.h"
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +27,9 @@ void OnBluetoothFunction(void);
 void OnBatteryFunction(void);
 void OnStorageFunction(void);
 void ShowMainMenu(MenuShow_t *ptShowInfo);
+void ShowCameraMenu(MenuShow_t *ptShowInfo);
 void ShowSetMenu(MenuShow_t *ptShowInfo);
+void ShowMoreSetMenu(MenuShow_t *ptShowInfo);
 
 
 /**************************** 三级菜单 *****************************************/
@@ -49,7 +57,7 @@ MenuRegister_t sg_SetMenuTable[] =
     {"蓝牙", "Bluetooth",        0,                                  NULL,                   NULL,       NULL, NULL, OnBluetoothFunction, NULL},
     {"电池", "Battery",         0,                                  NULL,                   NULL,       NULL, NULL, OnBatteryFunction, NULL},
     {"储存", "Store",         0,                                  NULL,                   NULL,       NULL, NULL, OnStorageFunction, NULL},
-    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowSetMenu,   NULL, NULL, NULL, NULL},
+    {"更多", "More",         GET_MENU_NUM(sg_MoreSetMenuTable),  sg_MoreSetMenuTable,    ShowMoreSetMenu,   NULL, NULL, NULL, NULL},
 };
 
 /**************************** 一级菜单 *****************************************/
@@ -92,7 +100,7 @@ MenuRegister_t sg_MainMenuTable[] =
         NULL,           NULL,                   NULL,                   OnVideoFunction, (MenuImage_t *)&sgc_VideoImage},
     
     {" 摄像机 ", " Camera ",  GET_MENU_NUM(sg_CameraMenuTable),   sg_CameraMenuTable,     
-        ShowSetMenu,    NULL,                   NULL,                   NULL, (MenuImage_t *)&sgc_CameraImage},
+        ShowCameraMenu,    NULL,                   NULL,                   NULL, (MenuImage_t *)&sgc_CameraImage},
     
     {"  设置  ", " Setting",  GET_MENU_NUM(sg_SetMenuTable),              sg_SetMenuTable,        
         ShowSetMenu,    NULL,                   NULL,                   NULL, (MenuImage_t *)&sgc_SettingImage},
@@ -255,8 +263,8 @@ void ShowMainMenu(MenuShow_t *ptShowInfo)
     printf("\n");
 }
 
-/* 设置菜单显示效果 */
-void ShowSetMenu(MenuShow_t *ptShowInfo)
+/* 摄像机菜单显示效果 */
+void ShowCameraMenu(MenuShow_t *ptShowInfo)
 {
     uint8_t showNum = 3;
     menusize_t  tmpselect;
@@ -269,13 +277,87 @@ void ShowSetMenu(MenuShow_t *ptShowInfo)
 
         if (tmpselect == ptShowInfo->selectItem)
         {
-            printf("> %-10s\n", ptShowInfo->pszItemsDesc[tmpselect]);
+            printf("\e[0;30;47m %d. %-34s\e[0m\n", tmpselect + 1, ptShowInfo->pszItemsDesc[tmpselect]);
         }
         else
         {
-            printf("  %-10s\n", ptShowInfo->pszItemsDesc[tmpselect]);
+            printf("\e[7;30;47m %d. %-34s\e[0m\n", tmpselect + 1, ptShowInfo->pszItemsDesc[tmpselect]);
         }
     }
+}
+
+/* 保存设置菜单信息，用来辅助显示更多设置菜单显示效果 */
+static MenuShow_t sg_tSetMenuShowInfo = {0};
+
+/* 设置菜单显示效果 */
+void ShowSetMenu(MenuShow_t *ptShowInfo)
+{
+    uint8_t showNum = 3;
+    menusize_t  tmpselect;
+
+    Menu_UpdateShowBase(ptShowInfo, &showNum);
+
+    sg_tSetMenuShowInfo = *ptShowInfo;
+
+    for (int i = 0; i < showNum; i++)
+    {
+        tmpselect = i + ptShowInfo->showBaseItem;
+
+        if (tmpselect == sg_tSetMenuShowInfo.selectItem)
+        {
+            printf("\e[0;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+        }
+        else
+        {
+            printf("\e[7;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+        }
+    }
+}
+
+/* 更多设置菜单显示效果: 右侧弹出菜单效果 */
+void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
+{
+    uint8_t showNum = 3;
+    uint8_t showsubNum = 3;
+    menusize_t  tmpselect;
+
+    if (sg_tSetMenuShowInfo.itemsNum == 0)
+    {
+        return;
+    }
+
+    Menu_UpdateShowBase(&sg_tSetMenuShowInfo, &showNum);
+    Menu_UpdateShowBase(ptShowInfo, &showsubNum);
+
+    for (int i = 0; i < showNum; i++)
+    {
+        tmpselect = i + sg_tSetMenuShowInfo.showBaseItem;
+
+        if (tmpselect == sg_tSetMenuShowInfo.selectItem)
+        {
+            printf("\e[0;30;47m %d. %-16s\e[0m |", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+        }
+        else
+        {
+            printf("\e[7;30;47m %d. %-16s\e[0m |", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+        }
+
+        if (i < showsubNum)
+        {
+            tmpselect = i + ptShowInfo->showBaseItem;
+
+            if (tmpselect == ptShowInfo->selectItem)
+            {
+                printf(" \e[0;30;47m %-16s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
+            }
+            else
+            {
+                printf(" \e[7;30;47m %-16s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
+            }
+        }
+
+        printf("\n");
+    }   
 }
 
 
