@@ -290,9 +290,6 @@ void ShowCameraMenu(MenuShow_t *ptShowInfo)
     }
 }
 
-/* 保存设置菜单信息，用来辅助显示更多设置菜单显示效果 */
-static MenuShow_t sg_tSetMenuShowInfo = {0};
-
 /* 设置菜单显示效果 */
 void ShowSetMenu(MenuShow_t *ptShowInfo)
 {
@@ -303,19 +300,17 @@ void ShowSetMenu(MenuShow_t *ptShowInfo)
 
     printf("\e[0;30;46m ------------- %s ------------- \e[0m\n", ptShowInfo->pszDesc);
 
-    sg_tSetMenuShowInfo = *ptShowInfo;
-
     for (int i = 0; i < showNum; i++)
     {
         tmpselect = i + ptShowInfo->showBaseItem;
 
-        if (tmpselect == sg_tSetMenuShowInfo.selectItem)
+        if (tmpselect == ptShowInfo->selectItem)
         {
-            printf("\e[0;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+            printf("\e[0;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, ptShowInfo->pszItemsDesc[tmpselect]);
         }
         else
         {
-            printf("\e[7;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+            printf("\e[7;30;47m %d. %-16s\e[0m |\n", tmpselect + 1, ptShowInfo->pszItemsDesc[tmpselect]);
         }
     }
 }
@@ -327,25 +322,29 @@ void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
     uint8_t showsubNum = 3;
     menusize_t  tmpselect;
 
-    if (sg_tSetMenuShowInfo.itemsNum == 0)
+    MenuShow_t tParentMenuShowInfo;
+
+    if (Menu_GetParentMenuShow(&tParentMenuShowInfo, 1) != 0)
     {
         return;
     }
 
-    Menu_UpdateShowBase(&sg_tSetMenuShowInfo, &showNum);
+    Menu_UpdateShowBase(&tParentMenuShowInfo, &showNum);
     Menu_UpdateShowBase(ptShowInfo, &showsubNum);
+
+    printf("\e[0;30;46m ------------- %s ------------- \e[0m\n", tParentMenuShowInfo.pszDesc);
 
     for (int i = 0; i < showNum; i++)
     {
-        tmpselect = i + sg_tSetMenuShowInfo.showBaseItem;
+        tmpselect = i + tParentMenuShowInfo.showBaseItem;
 
-        if (tmpselect == sg_tSetMenuShowInfo.selectItem)
+        if (tmpselect == tParentMenuShowInfo.selectItem)
         {
-            printf("\e[0;30;47m %d. %-16s\e[0m |", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+            printf("\e[0;30;47m %d. %-16s\e[0m |", tmpselect + 1, tParentMenuShowInfo.pszItemsDesc[tmpselect]);
         }
         else
         {
-            printf("\e[7;30;47m %d. %-16s\e[0m |", tmpselect + 1, sg_tSetMenuShowInfo.pszItemsDesc[tmpselect]);
+            printf("\e[7;30;47m %d. %-16s\e[0m |", tmpselect + 1, tParentMenuShowInfo.pszItemsDesc[tmpselect]);
         }
 
         if (i < showsubNum)
@@ -354,11 +353,11 @@ void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
 
             if (tmpselect == ptShowInfo->selectItem)
             {
-                printf(" \e[0;30;47m %-16s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
+                printf(" \e[0;30;47m %-14s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
             }
             else
             {
-                printf(" \e[7;30;47m %-16s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
+                printf(" \e[7;30;47m %-14s\e[0m", ptShowInfo->pszItemsDesc[tmpselect]);
             }
         }
 

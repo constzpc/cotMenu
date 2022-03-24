@@ -695,6 +695,21 @@ int Menu_EnterShortcutMenu(int8_t id)
     return 0;
 }
 
+static menubool IsMenuVeiw(MenuRegister_t *pMenu)
+{
+    int i;
+
+    for (i = 0; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
+    {
+        if (sg_tMenuManage.pDisableViewMenuList[i] == pMenu)
+        {
+            return MENU_FALSE;
+        }
+    }
+    
+    return MENU_TRUE;
+}
+
 /**
   * @brief      更新当前菜单首个显示的选项
   * 
@@ -731,19 +746,67 @@ int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
     return 0;
 }
 
-menubool IsMenuVeiw(MenuRegister_t *pMenu)
+/**
+ * @brief       得到父N级菜单的显示信息
+ *              如获取当前菜单的二级父菜单信息，level 为2
+ * 
+ * @param[out]  ptMenuShow 父 n 级菜单显示信息
+ * @param[in]   level      n 级, 大于1
+ * @return int 
+ */
+int Menu_GetParentMenuShow(MenuShow_t *ptMenuShow, uint8_t level)
 {
     int i;
+    MenuRegister_t *pMenu;
+    MenuCtrl_t *pMenuCtrl = NULL;
 
-    for (i = 0; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
+    if (sg_tMenuManage.pMenuCtrl == NULL)
     {
-        if (sg_tMenuManage.pDisableViewMenuList[i] == pMenu)
-        {
-            return MENU_FALSE;
-        }
+        return -1;
     }
-    
-    return MENU_TRUE;
+
+    pMenuCtrl = sg_tMenuManage.pMenuCtrl->pParentMenuCtrl;
+
+    while (level && pMenuCtrl != NULL)
+    {
+        pMenu = pMenuCtrl->pMenuInfo;
+        ptMenuShow->itemsNum = pMenuCtrl->itemsNum;
+        ptMenuShow->selectItem = pMenuCtrl->selectItem;
+        ptMenuShow->showBaseItem = pMenuCtrl->showBaseItem;
+
+        if (sg_tMenuManage.isEnglish)
+        {
+            ptMenuShow->pszDesc = pMenuCtrl->pszEnDesc;
+            
+            for (i = 0; i < ptMenuShow->itemsNum && i < MENU_MAX_NUM; i++)
+            {
+                ptMenuShow->itemsView[i] = IsMenuVeiw(&pMenu[i]);
+                ptMenuShow->pszItemsDesc[i] = (char *)pMenu[i].pszEnDesc;
+                ptMenuShow->pItemsExData[i] = pMenu[i].pExtendData;
+            }        
+        }
+        else
+        {
+            ptMenuShow->pszDesc = pMenuCtrl->pszDesc;
+            
+            for (i = 0; i < ptMenuShow->itemsNum && i < MENU_MAX_NUM; i++)
+            {
+                ptMenuShow->itemsView[i] = IsMenuVeiw(&pMenu[i]);
+                ptMenuShow->pszItemsDesc[i] = (char *)pMenu[i].pszDesc;
+                ptMenuShow->pItemsExData[i] = pMenu[i].pExtendData;
+            }        
+        }
+        
+        pMenuCtrl = pMenuCtrl->pParentMenuCtrl;
+        level--;
+    }
+
+    if (level != 0 && pMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
+    return 0;
 }
 
 /**

@@ -56,19 +56,19 @@ typedef void (*MenuCallFun_f)(void);
 
 typedef struct
 {
-    menusize_t itemsNum;            /*!< 当前菜单中选项的总数目 */
+    menusize_t itemsNum;                /*!< 当前菜单中选项的总数目 */
 
-    menusize_t selectItem;          /*!< 当前菜单中被选中的选项 */
+    menusize_t selectItem;              /*!< 当前菜单中被选中的选项 */
 
-    menusize_t showBaseItem;        /*!< 当前菜单首个显示的选项 */
+    menusize_t showBaseItem;            /*!< 当前菜单首个显示的选项 */
     
-    char     *pszDesc;              /*!< 当前菜单的字符串描述 */
+    char     *pszDesc;                  /*!< 当前菜单的字符串描述 */
 
-    menubool itemsView[MENU_MAX_NUM];/*!< 当前菜单中所有选项的可视状态 */
+    menubool itemsView[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的可视状态 */
     
-    char *pszItemsDesc[MENU_MAX_NUM];/*!< 当前菜单中所有选项的字符串描述 */
+    char *pszItemsDesc[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的字符串描述 */
 
-    void *pItemsExData[MENU_MAX_NUM];/*!< 当前菜单中所有选项注册时的扩展数据 */
+    void *pItemsExData[MENU_MAX_NUM];   /*!< 当前菜单中所有选项注册时的扩展数据 */
 } MenuShow_t;
 
 typedef void (*ShowMenuCallFun_f)(MenuShow_t *ptShowInfo); 
@@ -137,6 +137,7 @@ extern int Menu_DisableViewMenu(MenuRegister_t *pMenu, menubool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
+extern int Menu_GetParentMenuShow(MenuShow_t *ptMenuShow, uint8_t level);
 
 /* 菜单状态获取函数 */
 extern menubool Menu_IsRun(void);
