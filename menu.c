@@ -3,8 +3,8 @@
   * @file    menu.c
   * @brief   该文件提供菜单框架功能
   * @author  const_zpc  any question please send mail to const_zpc@163.com
-  * @version V2.0.0
-  * @date    2021-11-10
+  * @version V2.1.0
+  * @date    2022-03-24
   *
   * @details  功能详细说明：
   *           + 菜单初始化函数
@@ -34,6 +34,8 @@
 typedef struct MenuCtrl
 {
     struct MenuCtrl    *pParentMenuCtrl;    /*!< 父菜单控制处理 */
+    char               *pszDesc;            /*!< 当前菜单的中文字符串描述 */
+    char               *pszEnDesc;          /*!< 当前菜单的英文字符串描述 */
     ShowMenuCallFun_f   pfnShowMenuFun;     /*!< 当前菜单显示效果函数 */
     MenuRegister_t     *pMenuInfo;          /*!< 当前菜单选项信息 */
     menusize_t          itemsNum;           /*!< 当前菜单选项总数目 */
@@ -129,11 +131,9 @@ static MenuCtrl_t *MianMenu(void)
   * @brief      菜单初始化
   * 
   * @param[in]  pMainMenu        主菜单注册信息
-  * @param[in]  num              主菜单数目
-  * @param[in]  fpnShowMenu      主菜单显示效果函数, 不能为 NULL
   * @return     0,成功; -1,失败 
   */
-int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu)
+int Menu_Init(MainMenuCfg_t *pMainMenu)
 {
     int i;
     MenuCtrl_t *pMenuCtrl = NULL;
@@ -147,7 +147,7 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 #endif
     
     sg_tMenuManage.isEnglish = MENU_FALSE;
-    sg_tMenuManage.pfnEnterCallFun = NULL;
+    sg_tMenuManage.pfnEnterCallFun = pMainMenu->pfnEnterCallFun;
     sg_tMenuManage.pfnExitCallFun = NULL;
 
     for (i = 0; i < MENU_MAX_SHORTCUT_NUM; i++)
@@ -157,10 +157,12 @@ int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowM
 
     if ((pMenuCtrl = NewMenu()) != NULL)
     {
+        pMenuCtrl->pszDesc = (char *)pMainMenu->pszDesc;
+        pMenuCtrl->pszEnDesc = (char *)pMainMenu->pszEnDesc;
         pMenuCtrl->pParentMenuCtrl = NULL;
-        pMenuCtrl->pfnShowMenuFun = fpnShowMenu;
-        pMenuCtrl->pMenuInfo = pMainMenu;
-        pMenuCtrl->itemsNum = num;
+        pMenuCtrl->pfnShowMenuFun = pMainMenu->pfnShowMenuFun;
+        pMenuCtrl->pMenuInfo = pMainMenu->pMenu;
+        pMenuCtrl->itemsNum = pMainMenu->menuNum;
         pMenuCtrl->selectItem = 0;
         pMenuCtrl->showBaseItem = 0;
         pMenuCtrl->isRunCallback = MENU_FALSE;
@@ -185,7 +187,7 @@ int Menu_DeInit(void)
         return -1;
     }
 
-    while (Menu_Exit(1) == 0);
+    while (Menu_Exit(1) == 0){}
 
     DeleteMenu(sg_tMenuManage.pMenuCtrl);
     sg_tMenuManage.pMenuCtrl = NULL;
@@ -269,7 +271,7 @@ int Menu_AddShortcutMenu(MenuRegister_t *pMenuAddr)
     int8_t pathId[MENU_MAX_DEPTH + 1];
     MenuCtrl_t *pMenuCtrl;
 
-    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuList[idx++] != NULL);
+    while (idx < MENU_MAX_SHORTCUT_NUM && sg_tMenuManage.pShortcutMenuList[idx++] != NULL){}
     
     if (idx == MENU_MAX_SHORTCUT_NUM)
     {
@@ -474,6 +476,8 @@ int Menu_Enter(void)
 
         if ((pMenuCtrl = NewMenu()) != NULL)
         {
+            pMenuCtrl->pszDesc = (char *)sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pszDesc;
+            pMenuCtrl->pszEnDesc = (char *)sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pszEnDesc;
             pMenuCtrl->pParentMenuCtrl = sg_tMenuManage.pMenuCtrl;
             pMenuCtrl->pMenuInfo = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].pSubMenu;
             pMenuCtrl->itemsNum = sg_tMenuManage.pMenuCtrl->pMenuInfo[sg_tMenuManage.pMenuCtrl->selectItem].subMenuNum;
@@ -780,6 +784,8 @@ int Menu_Task(void)
 
         if (sg_tMenuManage.isEnglish)
         {
+            tMenuShow.pszDesc = sg_tMenuManage.pMenuCtrl->pszEnDesc;
+            
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
                 tMenuShow.itemsView[i] = IsMenuVeiw(&pMenu[i]);
@@ -789,6 +795,8 @@ int Menu_Task(void)
         }
         else
         {
+            tMenuShow.pszDesc = sg_tMenuManage.pMenuCtrl->pszDesc;
+            
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
                 tMenuShow.itemsView[i] = IsMenuVeiw(&pMenu[i]);

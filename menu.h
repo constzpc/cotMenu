@@ -3,8 +3,8 @@
   * @file    menu.h
   * @brief   该文件提供菜单框架所有函数原型
   * @author  const_zpc    any question please send mail to const_zpc@163.com
-  * @version V2.0.0
-  * @date    2021-11-10
+  * @version V2.1.0
+  * @date    2022-03-24
   **********************************************************************************************************************
   *
   **********************************************************************************************************************
@@ -61,6 +61,8 @@ typedef struct
     menusize_t selectItem;          /*!< 当前菜单中被选中的选项 */
 
     menusize_t showBaseItem;        /*!< 当前菜单首个显示的选项 */
+    
+    char     *pszDesc;              /*!< 当前菜单的字符串描述 */
 
     menubool itemsView[MENU_MAX_NUM];/*!< 当前菜单中所有选项的可视状态 */
     
@@ -96,6 +98,25 @@ typedef struct MenuRegister
     void             *pExtendData;      /*!< 当前选项的菜单显示效果函数扩展数据入参, 可自行设置该内容 */
 }MenuRegister_t;
 
+/**
+  * @brief 菜单信息注册结构体
+  * 
+  */
+typedef struct
+{
+    const char     *pszDesc;            /*!< 主菜单的中文字符串描述 */
+
+    const char     *pszEnDesc;          /*!< 主菜单的英文字符串描述 */
+
+    ShowMenuCallFun_f pfnShowMenuFun;   /*!< 主菜单显示效果函数 */
+
+    MenuCallFun_f   pfnEnterCallFun;    /*!< 进入主菜单时需要执行的函数, 为NULL不执行 */
+    
+    menusize_t      menuNum;            /*!< 主菜单的选项数目 */
+
+    MenuRegister_t *pMenu;              /*!< 主菜单的选项内容 */
+}MainMenuCfg_t;
+
 /* Exported constants ------------------------------------------------------------------------------------------------*/
 /* Exported macro ----------------------------------------------------------------------------------------------------*/
 
@@ -104,7 +125,7 @@ typedef struct MenuRegister
 /* Exported functions ------------------------------------------------------------------------------------------------*/
 
 /* 菜单初始化和反初始化 */
-extern int Menu_Init(MenuRegister_t *pMainMenu, uint8_t num, ShowMenuCallFun_f fpnShowMenu);
+extern int Menu_Init(MainMenuCfg_t *pMainMenu);
 extern int Menu_DeInit(void);
 
 /* 菜单功能设置 */
