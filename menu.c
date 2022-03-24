@@ -47,6 +47,7 @@ typedef struct
     MenuCtrl_t        *pMenuCtrl;           /*!< 当前菜单控制处理 */
     menubool           isEnglish;           /*!< 是否切换成英文 */
     MenuRegister_t    *pShortcutMenuList[MENU_MAX_SHORTCUT_NUM];/*!< 快捷选择项列表 */
+    MenuRegister_t    *pDisableViewMenuList[MENU_MAX_DISABLE_VIEW_NUM];/*!< 可视状态禁止选择项列表 */
     MenuCallFun_f      pfnEnterCallFun;     /*!< 当前选项进入所执行的函数 */
     MenuCallFun_f      pfnExitCallFun;      /*!< 当前选项退出所执行的函数 */
 }MenuManage_t;
@@ -318,6 +319,61 @@ int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath)
         idx++;
     }
     
+    return 0;
+}
+
+/**
+ * @brief       设置禁止显示的菜单项
+ * 
+ * @param[in]   pMenu 菜单项
+ * @param[in]   isDisableView 
+ * @return      0,成功; -1,失败
+ */
+int Menu_DisableViewMenu(MenuRegister_t *pMenu, menubool isDisableView)
+{
+    int i, idx = 0;
+
+    if (isDisableView)
+    {
+        while (idx < MENU_MAX_DISABLE_VIEW_NUM && sg_tMenuManage.pDisableViewMenuList[idx++] != NULL)
+        {
+            if (sg_tMenuManage.pDisableViewMenuList[idx++] == NULL)
+            {
+                sg_tMenuManage.pDisableViewMenuList[idx] = pMenu;
+                break;
+            }
+
+            idx++;
+        }
+
+        if (idx == MENU_MAX_DISABLE_VIEW_NUM)
+        {
+            return -1;
+        }
+    }
+    else
+    {
+        while (idx < MENU_MAX_DISABLE_VIEW_NUM && sg_tMenuManage.pDisableViewMenuList[idx] != NULL)
+        {
+            if (sg_tMenuManage.pDisableViewMenuList[idx] == pMenu)
+            {
+                for (i = idx; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
+                {
+                    if (i == MENU_MAX_DISABLE_VIEW_NUM - 1)
+                    {
+                        sg_tMenuManage.pDisableViewMenuList[i] = NULL;
+                    }
+                    else
+                    {
+                        sg_tMenuManage.pDisableViewMenuList[i] = sg_tMenuManage.pDisableViewMenuList[i + 1];
+                    }
+                }
+            }
+
+            idx++;
+        }
+    }
+
     return 0;
 }
 
@@ -671,6 +727,21 @@ int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
     return 0;
 }
 
+menubool IsMenuVeiw(MenuRegister_t *pMenu)
+{
+    int i;
+
+    for (i = 0; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
+    {
+        if (sg_tMenuManage.pDisableViewMenuList[i] == pMenu)
+        {
+            return MENU_FALSE;
+        }
+    }
+    
+    return MENU_TRUE;
+}
+
 /**
   * @brief  菜单任务
   * 
@@ -711,6 +782,7 @@ int Menu_Task(void)
         {
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
+                tMenuShow.itemsView[i] = IsMenuVeiw(&pMenu[i]);
                 tMenuShow.pszItemsDesc[i] = (char *)pMenu[i].pszEnDesc;
                 tMenuShow.pItemsExData[i] = pMenu[i].pExtendData;
             }        
@@ -719,6 +791,7 @@ int Menu_Task(void)
         {
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
+                tMenuShow.itemsView[i] = IsMenuVeiw(&pMenu[i]);
                 tMenuShow.pszItemsDesc[i] = (char *)pMenu[i].pszDesc;
                 tMenuShow.pItemsExData[i] = pMenu[i].pExtendData;
             }        

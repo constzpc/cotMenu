@@ -36,6 +36,9 @@
 /* 快捷选择项支持的最大数目 */
 #define MENU_MAX_SHORTCUT_NUM       5
 
+/* 选择项设置不可视状态的最大数目 */
+#define MENU_MAX_DISABLE_VIEW_NUM   5
+
 /******************************************* 配置项 ********************************************************************/
 
 
@@ -58,6 +61,8 @@ typedef struct
     menusize_t selectItem;          /*!< 当前菜单中被选中的选项 */
 
     menusize_t showBaseItem;        /*!< 当前菜单首个显示的选项 */
+
+    menubool itemsView[MENU_MAX_NUM];/*!< 当前菜单中所有选项的可视状态 */
     
     char *pszItemsDesc[MENU_MAX_NUM];/*!< 当前菜单中所有选项的字符串描述 */
 
@@ -107,6 +112,7 @@ extern menubool Menu_IsEnglish(void);
 extern int Menu_SetEnglish(menubool isEnable);
 extern int Menu_AddShortcutMenu(MenuRegister_t *pMenuPath);
 extern int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath);
+extern int Menu_DisableViewMenu(MenuRegister_t *pMenu, menubool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
