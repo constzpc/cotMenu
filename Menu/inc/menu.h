@@ -3,8 +3,8 @@
   * @file    menu.h
   * @brief   该文件提供菜单框架所有函数原型
   * @author  const_zpc    any question please send mail to const_zpc@163.com
-  * @version V2.1.0
-  * @date    2022-03-24
+  * @version V3.0.0
+  * @date    2022-07-22
   **********************************************************************************************************************
   *
   **********************************************************************************************************************
@@ -17,6 +17,7 @@
 
 /* Includes ----------------------------------------------------------------------------------------------------------*/
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef NULL
 #define NULL 0
@@ -33,9 +34,6 @@
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM                20
 
-/* 快捷选择项支持的最大数目 */
-#define MENU_MAX_SHORTCUT_NUM       5
-
 /* 选择项设置不可视状态的最大数目 */
 #define MENU_MAX_DISABLE_VIEW_NUM   5
 
@@ -50,8 +48,6 @@ typedef uint8_t menusize_t;
 typedef uint16_t menusize_t;
 #endif
 
-
-typedef enum{MENU_FALSE = 0, MENU_TRUE} menubool;
 typedef void (*MenuCallFun_f)(void);
 
 typedef struct
@@ -64,7 +60,7 @@ typedef struct
     
     char     *pszDesc;                  /*!< 当前菜单的字符串描述 */
 
-    menubool itemsView[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的可视状态 */
+    bool itemsView[MENU_MAX_NUM];       /*!< 当前菜单中所有选项的可视状态 */
     
     char *pszItemsDesc[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的字符串描述 */
 
@@ -77,26 +73,20 @@ typedef void (*ShowMenuCallFun_f)(MenuShow_t *ptShowInfo);
   * @brief 菜单信息注册结构体
   * 
   */
-typedef struct MenuRegister
+typedef struct
 {
     const char     *pszDesc;            /*!< 当前选项的中文字符串描述 */
 
     const char     *pszEnDesc;          /*!< 当前选项的英文字符串描述 */
 
-    menusize_t      subMenuNum;         /*!< 当前选项的子菜单数目, 子菜单数目为0则表示下一级非菜单界面, 会执行非菜单功能函数 */
+    MenuCallFun_f     pfnLoadCallFun;   /*!< 当前菜单选项每次加载时需要执行一次的函数, 为NULL不执行 */
 
-    struct MenuRegister *pSubMenu;      /*!< 当前选项的子菜单内容 */
+    MenuCallFun_f     pfnExitCallFun;   /*!< 当前菜单选项进入退出时需要执行一次的函数, 为NULL不执行 */
 
-    ShowMenuCallFun_f pfnShowMenuFun;   /*!< 当前选项的子菜单显示效果函数, 为NULL则延续上级菜单显示效果 */
-
-    MenuCallFun_f     pfnEnterCallFun;  /*!< 当前选项确定进入时需要执行的函数, 为NULL不执行 */
-
-    MenuCallFun_f     pfnExitCallFun;   /*!< 当前选项进入后在退出时需要执行的函数, 为NULL不执行 */
-
-    MenuCallFun_f     pfnRunCallFun;    /*!< 当前选项的非菜单功能函数, 只有当菜单数目为0有效, 为NULL不执行 */
+    MenuCallFun_f     pfnRunCallFun;    /*!< 当前菜单选项的周期调度函数 */
 
     void             *pExtendData;      /*!< 当前选项的菜单显示效果函数扩展数据入参, 可自行设置该内容 */
-}MenuRegister_t;
+} MenuList_t, MenuItem_t;
 
 /**
   * @brief 菜单信息注册结构体
@@ -108,51 +98,50 @@ typedef struct
 
     const char     *pszEnDesc;          /*!< 主菜单的英文字符串描述 */
 
-    ShowMenuCallFun_f pfnShowMenuFun;   /*!< 主菜单显示效果函数 */
+    MenuCallFun_f   pfnLoadCallFun;     /*!< 主菜单每次加载时需要执行一次的函数, 为NULL不执行 */
 
-    MenuCallFun_f   pfnEnterCallFun;    /*!< 进入主菜单时需要执行的函数, 为NULL不执行 */
-    
-    menusize_t      menuNum;            /*!< 主菜单的选项数目 */
-
-    MenuRegister_t *pMenu;              /*!< 主菜单的选项内容 */
+    MenuCallFun_f   pfnRunCallFun;      /*!< 主菜单周期调度函数 */
 }MainMenuCfg_t;
 
 /* Exported constants ------------------------------------------------------------------------------------------------*/
 /* Exported macro ----------------------------------------------------------------------------------------------------*/
 
-#define GET_MENU_NUM(X)    (sizeof(X) / sizeof(MenuRegister_t))
+#define GET_MENU_NUM(X)    (sizeof(X) / sizeof(MenuList_t))
 
 /* Exported functions ------------------------------------------------------------------------------------------------*/
 
 /* 菜单初始化和反初始化 */
+
 extern int Menu_Init(MainMenuCfg_t *pMainMenu);
 extern int Menu_DeInit(void);
 
+extern int Menu_BingMenu(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun);
+
 /* 菜单功能设置 */
-extern menubool Menu_IsEnglish(void);
-extern int Menu_SetEnglish(menubool isEnable);
-extern int Menu_AddShortcutMenu(MenuRegister_t *pMenuPath);
-extern int Menu_DeleteShortcutMenu(MenuRegister_t *pMenuPath);
-extern int Menu_DisableViewMenu(MenuRegister_t *pMenu, menubool isDisableView);
+
+extern int Menu_SetEnglish(bool isEnable);
+extern int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
+
 extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
 extern int Menu_GetParentMenuShow(MenuShow_t *ptMenuShow, uint8_t level);
 
 /* 菜单状态获取函数 */
-extern menubool Menu_IsRun(void);
-extern menubool Menu_IsMainMenu(void);
-extern menubool Menu_IsAtMenu(void);
+
+extern bool Menu_IsRun(void);
+extern bool Menu_IsEnglish(void);
 
 /* 菜单操作 */
+
 extern int Menu_Reset(void);
 extern int Menu_Enter(void);
-extern int Menu_Exit(menubool isReset);
-extern int Menu_SelectPrevious(menubool isAllowRoll);
-extern int Menu_SelectNext(menubool isAllowRoll);
-extern int Menu_EnterShortcutMenu(int8_t id);
+extern int Menu_Exit(bool isReset);
+extern int Menu_SelectPrevious(bool isAllowRoll);
+extern int Menu_SelectNext(bool isAllowRoll);
 
 /* 菜单轮询处理任务 */
+
 extern int Menu_Task(void);
 
 #endif // MENU_H
