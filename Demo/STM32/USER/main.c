@@ -54,7 +54,7 @@ int main(void)
     
     Menu_Init(&tMainMenu);
     
-    Menu_ShortcutEnter(2, 3, 0); // 开机通过快捷菜单索引进入语言选择界面
+    Menu_ShortcutEnter(true, 2, 3, 0); // 开机通过快捷菜单索引进入语言选择界面
     
     cTASK_Start();
 }

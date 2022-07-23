@@ -143,7 +143,7 @@ extern int Menu_Exit(bool isReset);
 extern int Menu_SelectPrevious(bool isAllowRoll);
 extern int Menu_SelectNext(bool isAllowRoll);
 
-extern int Menu_ShortcutEnter(uint8_t deep, ...);
+extern int Menu_ShortcutEnter(bool isAbsolute, uint8_t deep, ...);
 
 /* 菜单轮询处理任务 */
 

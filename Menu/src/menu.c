@@ -500,13 +500,14 @@ int Menu_SelectNext(bool isAllowRoll)
 #ifdef _MENU_USE_SHORTCUT_
 
 /**
- * @brief      相对当前菜单通过下级各菜单索引快速进入指定选项
+ * @brief      相对主菜单或当前菜单通过下级各菜单索引快速进入指定选项
  * 
+ * @param[in]  isAbsolute 是否采用绝对菜单索引（从主菜单开始）
  * @param[in]  deep 菜单深度，大于 0
  * @param[in]  ...  各级菜单索引值(从0开始), 入参个数由 deep 的值决定
  * @return     0,成功; -1,失败
  */
-int Menu_ShortcutEnter(uint8_t deep, ...)
+int Menu_ShortcutEnter(bool isAbsolute, uint8_t deep, ...)
 {
     uint8_t selectDeep = 0;
     va_list pItemList;
@@ -515,6 +516,11 @@ int Menu_ShortcutEnter(uint8_t deep, ...)
     if (sg_tMenuManage.pMenuCtrl == NULL)
     {
         return -1;
+    }
+
+    if (isAbsolute)
+    {
+        Menu_Reset();
     }
 
     va_start(pItemList, deep);
