@@ -24,13 +24,13 @@ static void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
 
     MenuShow_t tParentMenuShowInfo;
 
-    if (Menu_GetParentMenuShow(&tParentMenuShowInfo, 1) != 0)
+    if (Menu_QueryParentMenu(&tParentMenuShowInfo, 1) != 0)
     {
         return;
     }
 
-    Menu_UpdateShowBase(&tParentMenuShowInfo, &showNum);
-    Menu_UpdateShowBase(ptShowInfo, &showsubNum);
+    Menu_LimitShowListNum(&tParentMenuShowInfo, &showNum);
+    Menu_LimitShowListNum(ptShowInfo, &showsubNum);
 
     printf("\e[0;30;46m ------------- %s ------------- \e[0m\n", tParentMenuShowInfo.pszDesc);
 

@@ -28,7 +28,7 @@ static void ShowCameraMenu(MenuShow_t *ptShowInfo)
     uint8_t showNum = 3;
     menusize_t  tmpselect;
 
-    Menu_UpdateShowBase(ptShowInfo, &showNum);
+    Menu_LimitShowListNum(ptShowInfo, &showNum);
 
     printf("\e[0;30;46m ------------- %s ------------- \e[0m\n", ptShowInfo->pszDesc);
 

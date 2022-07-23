@@ -34,7 +34,7 @@ static void ShowSetMenu(MenuShow_t *ptShowInfo)
     char szDesc[17]; 
     oledsize_t idx = (128 - 8 * strlen(ptShowInfo->pszDesc)) / 2;
 
-    Menu_UpdateShowBase(ptShowInfo, &showNum);
+    Menu_LimitShowListNum(ptShowInfo, &showNum);
     
     OLED_SetText(idx, 0, ptShowInfo->pszDesc, 0, FONT_16X16);
 

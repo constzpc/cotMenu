@@ -68,7 +68,6 @@ static uint8_t    sg_currMenuDepth = 0;
 static MenuCtrl_t *NewMenu(void);
 static void DeleteMenu(MenuCtrl_t *pMenu);
 static MenuCtrl_t *MianMenu(void);
-static bool FindMenu(int8_t *pPathId, const MenuList_t *pMenuItem, const MenuList_t *pMenuList, menusize_t menuNum);
 
 /* Private function --------------------------------------------------------------------------------------------------*/
 /**
@@ -134,7 +133,6 @@ static MenuCtrl_t *MianMenu(void)
   */
 int Menu_Init(MainMenuCfg_t *pMainMenu)
 {
-    int i;
     MenuCtrl_t *pNewMenuCtrl = NULL;
 
     if (sg_tMenuManage.pMenuCtrl != NULL)
@@ -511,14 +509,14 @@ static bool IsMenuVeiw(MenuList_t *pMenu)
 }
 
 /**
-  * @brief      更新当前菜单首个显示的选项
+  * @brief      限制当前菜单界面最多显示的菜单数目
   * 
-  * @note       可在菜单显示效果回调函数中使用
+  * @note       在菜单显示效果回调函数中使用, 使用成员变量 showBaseItem 得到显示界面的第一个选项索引
   * @param[in,out]  tMenuShow   当前菜单显示信息
   * @param[in,out]  showNum     当前菜单中需要显示的选项数目, 根据当前菜单选项的总数得到最终的显示的选项数目
   * @return     0,成功; -1,失败 
   */
-int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
+int Menu_LimitShowListNum(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
 {
     if (ptMenuShow == NULL || pShowNum == NULL)
     {
@@ -547,14 +545,14 @@ int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum)
 }
 
 /**
- * @brief       得到父N级菜单的显示信息
+ * @brief       获取当前父菜单显示信息
  *              如获取当前菜单的二级父菜单信息，level 为2
  * 
  * @param[out]  ptMenuShow 父 n 级菜单显示信息
- * @param[in]   level      n 级, 大于1
+ * @param[in]   level      n 级, 大于 0
  * @return int 
  */
-int Menu_GetParentMenuShow(MenuShow_t *ptMenuShow, uint8_t level)
+int Menu_QueryParentMenu(MenuShow_t *ptMenuShow, uint8_t level)
 {
     int i;
     MenuList_t *pMenu;

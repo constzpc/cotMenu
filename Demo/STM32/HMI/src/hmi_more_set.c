@@ -27,12 +27,12 @@ static void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
 
     MenuShow_t tParentMenuShowInfo;
 
-    if (Menu_GetParentMenuShow(&tParentMenuShowInfo, 1) != 0)
+    if (Menu_QueryParentMenu(&tParentMenuShowInfo, 1) != 0)
     {
         return;
     }
     
-    Menu_UpdateShowBase(&tParentMenuShowInfo, &showNum);
+    Menu_LimitShowListNum(&tParentMenuShowInfo, &showNum);
     
     OLED_SetText(idx, 0, tParentMenuShowInfo.pszDesc, 0, FONT_16X16);
 
@@ -62,7 +62,7 @@ static void ShowMoreSetMenu(MenuShow_t *ptShowInfo)
     OLED_SetColor(OLED_BLACK, OLED_WHITE);
     
     showNum = 3;
-    Menu_UpdateShowBase(ptShowInfo, &showNum);
+    Menu_LimitShowListNum(ptShowInfo, &showNum);
     
     for (int i = 0; i < showNum; i++)
     {

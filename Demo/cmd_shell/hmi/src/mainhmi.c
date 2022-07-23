@@ -31,7 +31,7 @@ static void ShowMainMenu(MenuShow_t *ptShowInfo)
     MenuImage_t *pMenuImage;
     menusize_t  tmpselect;
 
-    Menu_UpdateShowBase(ptShowInfo, &showNum);
+    Menu_LimitShowListNum(ptShowInfo, &showNum);
 
     printf("\e[0;30;47m ------------- %s ------------- \e[0m\n", ptShowInfo->pszDesc);
 

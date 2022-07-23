@@ -124,8 +124,8 @@ extern int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 
-extern int Menu_UpdateShowBase(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
-extern int Menu_GetParentMenuShow(MenuShow_t *ptMenuShow, uint8_t level);
+extern int Menu_LimitShowListNum(MenuShow_t *ptMenuShow, menusize_t *pShowNum);
+extern int Menu_QueryParentMenu(MenuShow_t *ptMenuShow, uint8_t level);
 
 /* 菜单状态获取函数 */
 
