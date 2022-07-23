@@ -61,9 +61,8 @@ int main(void)
     
     Menu_Init(&tMainMenu);
     
-    //cTASK_Destory(TestTask);
-
-
+    Menu_ShortcutEnter(2, 3, 0); // 开机通过快捷菜单索引进入语言选择界面
+    
     cTASK_Start();
 }
 

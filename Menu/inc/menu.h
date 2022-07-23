@@ -25,8 +25,11 @@
 
 /******************************************* 配置项 ********************************************************************/
 
-/* 定义 _USE_MALLOC_ 则采用 malloc/free 的方式实现多级菜单, 否则通过数组的形式 */
-// #define _USE_MALLOC_
+/* 定义 _MENU_USE_MALLOC_ 则采用 malloc/free 的方式实现多级菜单, 否则通过数组的形式 */
+// #define _MENU_USE_MALLOC_
+
+/* 定义 _MENU_USE_SHORTCUT_ 则启用快捷菜单选项进入功能 */
+#define _MENU_USE_SHORTCUT_
 
 /* 多级菜单深度 */
 #define MENU_MAX_DEPTH              10
@@ -139,6 +142,8 @@ extern int Menu_Enter(void);
 extern int Menu_Exit(bool isReset);
 extern int Menu_SelectPrevious(bool isAllowRoll);
 extern int Menu_SelectNext(bool isAllowRoll);
+
+extern int Menu_ShortcutEnter(uint8_t deep, ...);
 
 /* 菜单轮询处理任务 */
 

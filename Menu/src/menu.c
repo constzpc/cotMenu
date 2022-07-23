@@ -26,8 +26,12 @@
 /* Includes ----------------------------------------------------------------------------------------------------------*/
 #include "menu.h"
 
-#ifdef _USE_MALLOC_
+#ifdef _MENU_USE_MALLOC_
 #include <malloc.h>
+#endif
+
+#ifdef _MENU_USE_SHORTCUT_
+#include <stdarg.h>
 #endif
 
 /* Private typedef ---------------------------------------------------------------------------------------------------*/
@@ -58,7 +62,7 @@ typedef struct
 /* Private variables -------------------------------------------------------------------------------------------------*/
 static MenuManage_t sg_tMenuManage;
 
-#ifndef _USE_MALLOC_
+#ifndef _MENU_USE_MALLOC_
 static MenuCtrl_t sg_arrMenuCtrl[MENU_MAX_DEPTH];
 #endif
 
@@ -81,7 +85,7 @@ static MenuCtrl_t *NewMenu(void)
 
     if (sg_currMenuDepth < MENU_MAX_DEPTH)
     {
-#ifdef _USE_MALLOC_
+#ifdef _MENU_USE_MALLOC_
         pMenuCtrl = (MenuCtrl_t *)malloc(sizeof(MenuCtrl_t));
 #else  
         pMenuCtrl = &sg_arrMenuCtrl[sg_currMenuDepth];
@@ -99,7 +103,7 @@ static MenuCtrl_t *NewMenu(void)
   */
 static void DeleteMenu(MenuCtrl_t *pMenu)
 {
-#ifdef _USE_MALLOC_
+#ifdef _MENU_USE_MALLOC_
     free(pMenu);
 #endif
     if (sg_currMenuDepth > 0)
@@ -492,6 +496,50 @@ int Menu_SelectNext(bool isAllowRoll)
 
     return 0;
 }
+
+#ifdef _MENU_USE_SHORTCUT_
+
+/**
+ * @brief      相对当前菜单通过下级各菜单索引快速进入指定选项
+ * 
+ * @param[in]  deep 菜单深度，大于 0
+ * @param[in]  ...  各级菜单索引值(从0开始), 入参个数由 deep 的值决定
+ * @return     0,成功; -1,失败
+ */
+int Menu_ShortcutEnter(uint8_t deep, ...)
+{
+    uint8_t selectDeep = 0;
+    va_list pItemList;
+    menusize_t selectItem;
+
+    if (sg_tMenuManage.pMenuCtrl == NULL)
+    {
+        return -1;
+    }
+
+    va_start(pItemList, deep);
+
+    while (selectDeep < deep)
+    {
+        selectItem = va_arg(pItemList, menusize_t);
+
+        if (selectItem >= sg_tMenuManage.pMenuCtrl->itemsNum)
+        {
+            va_end(pItemList);
+            return -1;
+        }
+
+        sg_tMenuManage.pMenuCtrl->selectItem = selectItem;
+        Menu_Enter();
+        selectDeep++;
+    }
+
+    va_end(pItemList);
+
+    return 0;
+}
+
+#endif
 
 static bool IsMenuVeiw(MenuList_t *pMenu)
 {
