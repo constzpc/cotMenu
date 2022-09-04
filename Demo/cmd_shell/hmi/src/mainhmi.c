@@ -89,7 +89,7 @@ static void ShowMainMenu(MenuShow_t *ptShowInfo)
 
 void Hmi_LoadMainHmi(void)
 {
-    Menu_BingMenu(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
+    Menu_Bind(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
 }
 
 void Hmi_MainTask(void)

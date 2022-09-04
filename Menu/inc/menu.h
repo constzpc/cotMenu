@@ -118,11 +118,11 @@ typedef struct
 extern int Menu_Init(MainMenuCfg_t *pMainMenu);
 extern int Menu_DeInit(void);
 
-extern int Menu_BingMenu(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun);
+extern int Menu_Bind(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun);
 
 /* 菜单功能设置 */
 
-extern int Menu_SetEnglish(bool isEnable);
+extern int Menu_EnableEnglish(bool isEnable);
 extern int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */

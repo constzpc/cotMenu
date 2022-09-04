@@ -61,7 +61,7 @@ void Hmi_LoadMainHmi(void)
     KEY_Register(IO_KEY_1, OnKeyFunCB);
     KEY_Register(IO_KEY_UP, OnKeyFunCB);
     
-    Menu_BingMenu(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
+    Menu_Bind(sg_MainMenuTable, GET_MENU_NUM(sg_MainMenuTable), ShowMainMenu);
     sg_isInit = true;
 }
 

@@ -53,7 +53,7 @@ void Hmi_CameraLoad(void)
         MOVETO(0, 0);
     printf("---加载-----\n");
     sg_isInit = true;
-    Menu_BingMenu(sg_CameraMenuTable, GET_MENU_NUM(sg_CameraMenuTable), ShowCameraMenu);
+    Menu_Bind(sg_CameraMenuTable, GET_MENU_NUM(sg_CameraMenuTable), ShowCameraMenu);
 }
 
 void Hmi_CameraExit(void)

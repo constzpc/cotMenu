@@ -54,7 +54,7 @@ void Hmi_CameraLoad(void)
     KEY_Register(IO_KEY_1, OnKeyFunCB);
     KEY_Register(IO_KEY_UP, OnKeyFunCB);
     
-    Menu_BingMenu(sg_CameraMenuTable, GET_MENU_NUM(sg_CameraMenuTable), ShowCameraMenu);
+    Menu_Bind(sg_CameraMenuTable, GET_MENU_NUM(sg_CameraMenuTable), ShowCameraMenu);
 }
 
 void Hmi_CameraExit(void)

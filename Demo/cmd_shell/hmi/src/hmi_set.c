@@ -52,7 +52,7 @@ static void ShowSetMenu(MenuShow_t *ptShowInfo)
 
 void Hmi_SetLoad(void)
 {
-    Menu_BingMenu(sg_SetMenuTable, GET_MENU_NUM(sg_SetMenuTable), ShowSetMenu);
+    Menu_Bind(sg_SetMenuTable, GET_MENU_NUM(sg_SetMenuTable), ShowSetMenu);
 }
 
 void Hmi_SetExit(void)
@@ -104,11 +104,11 @@ static void OnLanguageFunction(void)
 
     if (cmd == 0)
     {
-        Menu_SetEnglish(false);
+        Menu_EnableEnglish(false);
     }
     else
     {
-        Menu_SetEnglish(true);
+        Menu_EnableEnglish(true);
     }
 
     Menu_Exit(0); // 切换后自动退出

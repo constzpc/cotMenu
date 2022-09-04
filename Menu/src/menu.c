@@ -206,7 +206,7 @@ int Menu_DeInit(void)
   * @param      pfnShowMenuFun  新的菜单列表显示效果回调函数, 为NULL则延续上级菜单显示效果
   * @return     int 
   */
-int Menu_BingMenu(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun)
+int Menu_Bind(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun)
 {
     if (sg_tMenuManage.pMenuCtrl == NULL)
     {
@@ -240,12 +240,12 @@ bool Menu_IsEnglish(void)
 }
 
 /**
-  * @brief      设置英文显示
+  * @brief      使能英文显示
   * 
   * @param[in]  isEnable 使能英文显示
   * @return     0,成功; -1,失败  
   */
-int Menu_SetEnglish(bool isEnable)
+int Menu_EnableEnglish(bool isEnable)
 {
     sg_tMenuManage.isEnglish = isEnable;
     return 0;

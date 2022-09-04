@@ -87,7 +87,7 @@ void Hmi_SetLoad(void)
     KEY_Register(IO_KEY_1, OnKeyFunCB);
     KEY_Register(IO_KEY_UP, OnKeyFunCB);
     
-    Menu_BingMenu(sg_SetMenuTable, GET_MENU_NUM(sg_SetMenuTable), ShowSetMenu);
+    Menu_Bind(sg_SetMenuTable, GET_MENU_NUM(sg_SetMenuTable), ShowSetMenu);
 }
 
 void Hmi_SetExit(void)
@@ -142,7 +142,7 @@ static void OnLanguageFunctionLoad(void)
     KEY_Register(IO_KEY_0, OnKeyFunLanguageCB);
     KEY_Register(IO_KEY_1, OnKeyFunLanguageCB);
     KEY_Register(IO_KEY_UP, OnKeyFunLanguageCB);
-    Menu_BingMenu(sg_LanguageMenuTable, GET_MENU_NUM(sg_LanguageMenuTable), NULL);
+    Menu_Bind(sg_LanguageMenuTable, GET_MENU_NUM(sg_LanguageMenuTable), NULL);
 }
 
 static void OnLanguageFunction(void)
@@ -156,7 +156,7 @@ static void OnLanguageFunction(void)
 
 static void OnChangeChinese(void)
 {
-    Menu_SetEnglish(false);
+    Menu_EnableEnglish(false);
     
     // 切换完成自动退出
     Menu_Exit(false); // 退出到语言设置界面
@@ -165,7 +165,7 @@ static void OnChangeChinese(void)
 
 static void OnChangeEnglish(void)
 {
-    Menu_SetEnglish(true);
+    Menu_EnableEnglish(true);
     
     // 切换完成自动退出
     Menu_Exit(false); // 退出到语言设置界面
