@@ -3,8 +3,8 @@
   * @file    menu.h
   * @brief   该文件提供菜单框架所有函数原型
   * @author  const_zpc    any question please send mail to const_zpc@163.com
-  * @version V3.0.0
-  * @date    2022-07-22
+  * @version V3.1.0
+  * @date    2022-09-04
   **********************************************************************************************************************
   *
   **********************************************************************************************************************
@@ -18,6 +18,10 @@
 /* Includes ----------------------------------------------------------------------------------------------------------*/
 #include <stdint.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
 
 #ifndef NULL
 #define NULL 0
@@ -36,9 +40,6 @@
 
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM                20
-
-/* 选择项设置不可视状态的最大数目 */
-#define MENU_MAX_DISABLE_VIEW_NUM   5
 
 /******************************************* 配置项 ********************************************************************/
 
@@ -63,8 +64,6 @@ typedef struct
     
     char     *pszDesc;                  /*!< 当前菜单的字符串描述 */
 
-    bool itemsView[MENU_MAX_NUM];       /*!< 当前菜单中所有选项的可视状态 */
-    
     char *pszItemsDesc[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的字符串描述 */
 
     void *pItemsExData[MENU_MAX_NUM];   /*!< 当前菜单中所有选项注册时的扩展数据 */
@@ -118,12 +117,11 @@ typedef struct
 extern int Menu_Init(MainMenuCfg_t *pMainMenu);
 extern int Menu_DeInit(void);
 
-extern int Menu_BingMenu(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun);
+extern int Menu_Bind(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_f pfnShowMenuFun);
 
 /* 菜单功能设置 */
 
-extern int Menu_SetEnglish(bool isEnable);
-extern int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView);
+extern int Menu_EnableEnglish(bool isEnable);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 
@@ -148,5 +146,9 @@ extern int Menu_ShortcutEnter(bool isAbsolute, uint8_t deep, ...);
 /* 菜单轮询处理任务 */
 
 extern int Menu_Task(void);
+
+#ifdef __cplusplus
+ }
+#endif
 
 #endif // MENU_H

@@ -112,7 +112,7 @@ void Hmi_MoreSetLoad(void)
     KEY_Register(IO_KEY_1, OnKeyFunCB);
     KEY_Register(IO_KEY_UP, OnKeyFunCB);
     
-    Menu_BingMenu(sg_MoreSetMenuTable, GET_MENU_NUM(sg_MoreSetMenuTable), ShowMoreSetMenu);
+    Menu_Bind(sg_MoreSetMenuTable, GET_MENU_NUM(sg_MoreSetMenuTable), ShowMoreSetMenu);
 }
 
 void Hmi_MoreSetExit(void)
