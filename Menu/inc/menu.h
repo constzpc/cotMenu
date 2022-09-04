@@ -3,8 +3,8 @@
   * @file    menu.h
   * @brief   该文件提供菜单框架所有函数原型
   * @author  const_zpc    any question please send mail to const_zpc@163.com
-  * @version V3.0.0
-  * @date    2022-07-22
+  * @version V3.1.0
+  * @date    2022-09-04
   **********************************************************************************************************************
   *
   **********************************************************************************************************************
@@ -18,6 +18,10 @@
 /* Includes ----------------------------------------------------------------------------------------------------------*/
 #include <stdint.h>
 #include <stdbool.h>
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
 
 #ifndef NULL
 #define NULL 0
@@ -142,5 +146,9 @@ extern int Menu_ShortcutEnter(bool isAbsolute, uint8_t deep, ...);
 /* 菜单轮询处理任务 */
 
 extern int Menu_Task(void);
+
+#ifdef __cplusplus
+ }
+#endif
 
 #endif // MENU_H

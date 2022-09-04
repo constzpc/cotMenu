@@ -3,8 +3,8 @@
   * @file    menu.c
   * @brief   该文件提供菜单框架功能
   * @author  const_zpc  any question please send mail to const_zpc@163.com
-  * @version V3.0.0
-  * @date    2022-07-22
+  * @version V3.1.0
+  * @date    2022-09-04
   *
   * @details  功能详细说明：
   *           + 菜单初始化函数
