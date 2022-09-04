@@ -37,9 +37,6 @@
 /* 菜单支持的最大选项数目 */
 #define MENU_MAX_NUM                20
 
-/* 选择项设置不可视状态的最大数目 */
-#define MENU_MAX_DISABLE_VIEW_NUM   5
-
 /******************************************* 配置项 ********************************************************************/
 
 
@@ -63,8 +60,6 @@ typedef struct
     
     char     *pszDesc;                  /*!< 当前菜单的字符串描述 */
 
-    bool itemsView[MENU_MAX_NUM];       /*!< 当前菜单中所有选项的可视状态 */
-    
     char *pszItemsDesc[MENU_MAX_NUM];   /*!< 当前菜单中所有选项的字符串描述 */
 
     void *pItemsExData[MENU_MAX_NUM];   /*!< 当前菜单中所有选项注册时的扩展数据 */
@@ -123,7 +118,6 @@ extern int Menu_Bind(MenuList_t *pMenuList, menusize_t menuNum, ShowMenuCallFun_
 /* 菜单功能设置 */
 
 extern int Menu_EnableEnglish(bool isEnable);
-extern int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView);
 
 /* 菜单选项显示时需要使用的功能扩展函数 */
 

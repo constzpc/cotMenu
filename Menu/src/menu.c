@@ -53,8 +53,7 @@ typedef struct MenuCtrl
 typedef struct
 {
     MenuCtrl_t        *pMenuCtrl;           /*!< 当前菜单控制处理 */
-    bool               isEnglish;           /*!< 是否切换成英文 */
-    MenuItem_t        *pDisableViewMenuList[MENU_MAX_DISABLE_VIEW_NUM];/*!< 可视状态禁止选择项列表 */
+    bool               isEnglish;           /*!< 是否使能英文 */
 }MenuManage_t;
 
 /* Private define ----------------------------------------------------------------------------------------------------*/
@@ -248,61 +247,6 @@ bool Menu_IsEnglish(void)
 int Menu_EnableEnglish(bool isEnable)
 {
     sg_tMenuManage.isEnglish = isEnable;
-    return 0;
-}
-
-/**
- * @brief       设置禁止显示的菜单项
- * 
- * @param[in]   pMenu 菜单项
- * @param[in]   isDisableView 
- * @return      0,成功; -1,失败
- */
-int Menu_DisableViewMenu(MenuItem_t *pMenu, bool isDisableView)
-{
-    int i, idx = 0;
-
-    if (isDisableView)
-    {
-        while (idx < MENU_MAX_DISABLE_VIEW_NUM && sg_tMenuManage.pDisableViewMenuList[idx++] != NULL)
-        {
-            if (sg_tMenuManage.pDisableViewMenuList[idx++] == NULL)
-            {
-                sg_tMenuManage.pDisableViewMenuList[idx] = pMenu;
-                break;
-            }
-
-            idx++;
-        }
-
-        if (idx == MENU_MAX_DISABLE_VIEW_NUM)
-        {
-            return -1;
-        }
-    }
-    else
-    {
-        while (idx < MENU_MAX_DISABLE_VIEW_NUM && sg_tMenuManage.pDisableViewMenuList[idx] != NULL)
-        {
-            if (sg_tMenuManage.pDisableViewMenuList[idx] == pMenu)
-            {
-                for (i = idx; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
-                {
-                    if (i == MENU_MAX_DISABLE_VIEW_NUM - 1)
-                    {
-                        sg_tMenuManage.pDisableViewMenuList[i] = NULL;
-                    }
-                    else
-                    {
-                        sg_tMenuManage.pDisableViewMenuList[i] = sg_tMenuManage.pDisableViewMenuList[i + 1];
-                    }
-                }
-            }
-
-            idx++;
-        }
-    }
-
     return 0;
 }
 
@@ -547,21 +491,6 @@ int Menu_ShortcutEnter(bool isAbsolute, uint8_t deep, ...)
 
 #endif
 
-static bool IsMenuVeiw(MenuList_t *pMenu)
-{
-    int i;
-
-    for (i = 0; i < MENU_MAX_DISABLE_VIEW_NUM; i++)
-    {
-        if (sg_tMenuManage.pDisableViewMenuList[i] == pMenu)
-        {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
 /**
   * @brief      限制当前菜单界面最多显示的菜单数目
   * 
@@ -632,7 +561,6 @@ int Menu_QueryParentMenu(MenuShow_t *ptMenuShow, uint8_t level)
             
             for (i = 0; i < ptMenuShow->itemsNum && i < MENU_MAX_NUM; i++)
             {
-                ptMenuShow->itemsView[i] = IsMenuVeiw(&pMenu[i]);
                 ptMenuShow->pszItemsDesc[i] = (char *)pMenu[i].pszEnDesc;
                 ptMenuShow->pItemsExData[i] = pMenu[i].pExtendData;
             }        
@@ -643,7 +571,6 @@ int Menu_QueryParentMenu(MenuShow_t *ptMenuShow, uint8_t level)
             
             for (i = 0; i < ptMenuShow->itemsNum && i < MENU_MAX_NUM; i++)
             {
-                ptMenuShow->itemsView[i] = IsMenuVeiw(&pMenu[i]);
                 ptMenuShow->pszItemsDesc[i] = (char *)pMenu[i].pszDesc;
                 ptMenuShow->pItemsExData[i] = pMenu[i].pExtendData;
             }        
@@ -690,7 +617,6 @@ int Menu_Task(void)
             
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
-                tMenuShow.itemsView[i] = IsMenuVeiw(&pMenuList[i]);
                 tMenuShow.pszItemsDesc[i] = (char *)pMenuList[i].pszEnDesc;
                 tMenuShow.pItemsExData[i] = pMenuList[i].pExtendData;
             }        
@@ -701,7 +627,6 @@ int Menu_Task(void)
             
             for (i = 0; i < tMenuShow.itemsNum && i < MENU_MAX_NUM; i++)
             {
-                tMenuShow.itemsView[i] = IsMenuVeiw(&pMenuList[i]);
                 tMenuShow.pszItemsDesc[i] = (char *)pMenuList[i].pszDesc;
                 tMenuShow.pItemsExData[i] = pMenuList[i].pExtendData;
             }        
